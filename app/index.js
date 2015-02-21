@@ -2,7 +2,6 @@
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
-var mkdirp = require('mkdirp');
 var updateNotifier = require('update-notifier');
 var _ = require('underscore');
 var fse = require('fs-extra-promise');
