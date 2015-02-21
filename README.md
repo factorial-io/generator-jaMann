@@ -27,7 +27,7 @@ Yeoman travels light. He didn't pack any generators when he moved in. You can th
 To install generator-jaMann from npm, run:
 
 ```bash
-npm install -g generator-jaMann
+npm install -g generator-jamann
 ```
 
 Finally, initiate the generator:
