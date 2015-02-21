@@ -2,12 +2,10 @@
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
-// remove in favor of fse
 var mkdirp = require('mkdirp');
 var updateNotifier = require('update-notifier');
 var _ = require('underscore');
 var fse = require('fs-extra-promise');
-var fs = require('fs');
 require('shelljs/global');
 
 
@@ -17,7 +15,8 @@ module.exports = yeoman.generators.Base.extend({
     var pkg = require('../package.json');
     updateNotifier({pkg: pkg}).notify();
 
-    // Check for multibasebox. (@TODO: do this better)
+    // @TODO: do this better.
+    // Check for multibasebox.
     if (!fse.existsSync('./projects')){
       this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/stmh/multibasebox'));
       exit(1);
@@ -47,39 +46,40 @@ module.exports = yeoman.generators.Base.extend({
       var toolsPath = base + '/projects/' + answer.name + '/_tools';
       var projectPath = base + '/projects/' + answer.name;
 
-      // Check if project exists already.
+      // Check if the projectPath exists already.
       if (fse.existsSync(projectPath)){
         that.log(chalk.red('Project exists already.'));
         exit(1);
       }
 
-      // Create dirs @TODO: add promises.
-        fse.mkdirsAsync(toolsPath).then(function(){
-          // Commmands should be configurable.
-          var commands = {
-            gitInit: '(cd ' + projectPath + '; git init)',
-            fabalicious: '(cd ' + projectPath + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + toolsPath + '/fabalicious)',
-            drupaldocker: '(cd ' + projectPath + '; git submodule add https://github.com/stmh/drupal-docker.git ' + toolsPath + '/docker)',
-            drupalDownload: 'drush dl drupal --destination=' + projectPath + ' --drupal-project-rename=public'
-          };
+      // Create projectPath.
+      fse.mkdirsAsync(toolsPath).then(function(){
+        // Commmands should be configurable.
+        var commands = {
+          gitInit: '(cd ' + projectPath + '; git init)',
+          fabalicious: '(cd ' + projectPath + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + toolsPath + '/fabalicious)',
+          drupaldocker: '(cd ' + projectPath + '; git submodule add https://github.com/stmh/drupal-docker.git ' + toolsPath + '/docker)',
+          drupalDownload: 'drush dl drupal --destination=' + projectPath + ' --drupal-project-rename=public'
+        };
 
-          // Loop through commands.
-          _.each(commands, function(value, key){
-            value = value + ' > /dev/null 2>&1';
-            exec(value, function(code, output, list) {
-              that.log(chalk.green('Running install task for: ' + key));
-            });
+        // Loop through commands.
+        _.each(commands, function(value, key){
+          value = value + ' > /dev/null 2>&1';
+          exec(value, function(code, output, list) {
+            that.log(chalk.green('Running install task for: ' + key));
           });
-
-          // copy fabfile FAILS!
-          that.fs.copyTpl(
-            that.templatePath('_fabfile.yaml'),
-            that.destinationPath(projectPath + '/fabfile.yaml'),
-            { name: answer.name }
-          );
-          console.log(projectPath + '/fabfile.yaml');
-
         });
+
+        // @TODO: Copy fabfile FAILS!
+        that.fs.copyTpl(
+          that.templatePath('_fabfile.yaml'),
+          that.destinationPath(projectPath + '/fabfile.yaml'),
+          { name: answer.name }
+        );
+        console.log(projectPath + '/fabfile.yaml');
+
+      });
+
       // TODO: Executed to early.
       that.log(chalk.green('Mega! Project is ready!'));
     },
@@ -88,6 +88,9 @@ module.exports = yeoman.generators.Base.extend({
     },
 
     middleman: function () {
+    },
+
+    simple: function () {
     }
   },
 
@@ -120,7 +123,7 @@ module.exports = yeoman.generators.Base.extend({
       message: 'What kind of docker container do you wish?',
       choices: ['drupal', 'wordpress', 'middleman', 'simple webserver']
     }], function (answer) {
-      // How can i that.writing.{variable} -> function call.
+      // @TODO: that.writing.{variable} -> function call.
       if (answer.projectType == 'drupal') {
         that.writing.drupal(answer, that);
       }else{
@@ -129,6 +132,7 @@ module.exports = yeoman.generators.Base.extend({
     });
   },
 
+  // Example for options.
   install: function () {
     this.installDependencies({
       skipInstall: this.options['skip-install']
