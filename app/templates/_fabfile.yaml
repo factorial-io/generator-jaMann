@@ -1,0 +1,82 @@
+name: <%= name %>
+deploymentModule: <%= name %>_deploy
+
+excludeFiles:
+  backup:
+    - "styles"
+    - "tmp"
+  copyFrom:
+    - "tmp"
+    - "styles"
+
+dockerHosts:
+  default:
+    tasks:
+      start:
+        - docker start %name%
+      stop:
+        - docker stop %name%
+      logs:
+        - docker logs %name%
+      ps:
+        - docker ps
+  mbb:
+    inheritsFrom: default
+    host: multibasebox.dev
+    port: 22
+    user: vagrant
+    password: vagrant
+    rootFolder: /vagrant
+    tasks:
+      reload_haproxy:
+        - touch /tmp/haproxy
+
+      start:
+        - docker start %name%
+        - run_task(reload_haproxy)
+
+      stop:
+        - if docker ps | grep -qw %name% ; then docker stop %name%; fi
+        - run_task(reload_haproxy)
+
+      rebuild:
+        - cd %rootFolder%/%projectFolder%/_tools/docker && ./run.sh %name% %rootFolder%/%projectFolder% --webRoot %guest.rootFolder% --rebuild --ssh %guest.port%  --no-install --vhost %guest.host%
+        - run_task(reload_haproxy)
+      run:
+        - cd %rootFolder%/%projectFolder%/_tools/docker && ./run.sh %name% %rootFolder%/%projectFolder% --webRoot %guest.rootFolder%  --ssh %guest.port%  --no-install --vhost %guest.host%
+        - run_task(reload_haproxy)
+    reset:
+      - "drush vset -y file_public_path 'sites/default/files'"
+      - "drush vset -y file_private_path 'sites/default/files/private'"
+      - "drush vset -y file_temporary_path 'sites/default/files/private/tmp'"
+      - "mkdir files/private/tmp"
+
+hosts:
+  mbb:
+    host: <%= name %>.dev
+    user: root
+    password: root
+    port: 220
+    vagrant:
+      ip: localhost
+    # path to drupal's root folder
+    rootFolder: /var/www/public
+    gitRootFolder: /var/www/
+    # path to the site's folder
+    siteFolder: /sites/default
+    filesFolder: /sites/default/files
+    backupFolder: /var/www/backups
+    useForDevelopment: true
+    # branch to pull
+    branch: develop
+    hasDrush: true
+    supportsInstalls: true
+    docker:
+      name: <%= name %>
+      configuration: mbb
+      projectFolder: <%= name %>
+    database:
+      name: <%= name %>
+      user: root
+      pass: admin
+
