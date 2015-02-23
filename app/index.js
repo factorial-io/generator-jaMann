@@ -64,24 +64,45 @@ module.exports = generators.Base.extend({
     this.log('Installing fabalicious');
   },
 
+
+  // Run commands in shell.
+  _runCommands : function(commands) {
+    // Loop through commands.
+    _.each(commands, function(value, key){
+      value = value + ' > /dev/null 2>&1';
+      shell.exec(value, function(code, output, list) {
+        that.log(chalk.green('Running install task for: ' + key));
+      });
+    });
+  },
+
+  // Copy template files.
+  _copyTplFiles: function(tplFiles) {
+    that.fs.copyTpl(
+      that.templatePath('drupal/_fabfile.yaml'),
+      that.destinationPath('projects/' + that.answer.name + '/fabfile.yaml'),
+      { name: that.answer.name }
+    );
+  },
+
+  // Install Drupal.
   _installDrupal : function() {
-
-
-
     var paths = this._getPaths(this.answer.name);
     var that = this;
 
     this.log('Installing Drupal');
 
     // Check if the paths.project exists already.
+    // @TODO: do this earlier.
     if (fse.existsSync(paths.project)){
       this.log(chalk.red('Project exists already.'));
       shell.exit(1);
     }
 
     // Create paths.project.
-    fse.mkdirsAsync(paths.tools).then(function(){
-      // Commmands should be configurable.
+    // this get in here!
+    fse.mkdirsAsync(paths.tools).then(function(that){
+      // Run shell commands.
       var commands = {
         gitInit: '(cd ' + paths.project + '; git init)',
         fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
@@ -90,24 +111,25 @@ module.exports = generators.Base.extend({
         drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public'
       };
 
-      // Loop through commands.
-      _.each(commands, function(value, key){
-        value = value + ' > /dev/null 2>&1';
-        shell.exec(value, function(code, output, list) {
-          that.log(chalk.green('Running install task for: ' + key));
-        });
-      });
+      that._runCommands(commands);
 
-      that.fs.copyTpl(
-        that.templatePath('drupal/_fabfile.yaml'),
-        that.destinationPath('projects/' + that.answer.name + '/fabfile.yaml'),
-        { name: that.answer.name }
-      );
+      // Copy tpl files.
+      var tplFiles = {
+        from : 'drupal/_fabfile.yaml',
+        to : 'projects/' + that.answer.name + '/fabfile.yaml',
+        values: {
+          name: that.answer.name
+        }
+      };
+      //that._copyTplFiles(commands);
+
+      /*
       that.fs.copyTpl(
         that.templatePath('drupal/_gitignore'),
         that.destinationPath('projects/' + that.answer.name + '/.gitignore'),
         { name: that.answer.name }
       );
+      */
     });
   },
 
