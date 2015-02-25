@@ -108,7 +108,10 @@ module.exports = generators.Base.extend({
           fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
           symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
           drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
-          drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public'
+          drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          // this won't work async
+          //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
+          //dockerInstall: '(cd ' + paths.project + ' ; fab config:mbb install)'
         };
 
         this._runCommands(commands);
@@ -152,7 +155,12 @@ module.exports = generators.Base.extend({
       name: 'name',
       message: 'Name of your project',
       validate: function(input) {
-        return input.match(/^[a-zA-Z0-9_]+$/)? true : 'project name can only contain letters, numbers and underscores';
+        if (input.match(/^[a-zA-Z0-9_]+$/) && input.length > 3 && input.length < 31) {
+          return true;
+        }
+        else {
+          return 'Project name can only contain letters, numbers and underscores and cannot be fewer than 4 or more than 30 characters';
+        }
       },
     }, {
       name: 'projectType',
