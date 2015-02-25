@@ -67,6 +67,7 @@ module.exports = generators.Base.extend({
 
   // Run commands in shell.
   _runCommands : function(commands) {
+    var that = this;
     // Loop through commands.
     _.each(commands, function(value, key){
       value = value + ' > /dev/null 2>&1';
@@ -78,10 +79,11 @@ module.exports = generators.Base.extend({
 
   // Copy template files.
   _copyTplFiles: function(tplFiles) {
-    that.fs.copyTpl(
-      that.templatePath('drupal/_fabfile.yaml'),
-      that.destinationPath('projects/' + that.answer.name + '/fabfile.yaml'),
-      { name: that.answer.name }
+
+    this.fs.copyTpl(
+      this.templatePath('drupal/_fabfile.yaml'),
+      this.destinationPath('projects/' + this.answer.name + '/fabfile.yaml'),
+      { name: this.answer.name }
     );
   },
 
@@ -99,38 +101,38 @@ module.exports = generators.Base.extend({
       shell.exit(1);
     }
 
-    // Create paths.project.
-    // this get in here!
-    fse.mkdirsAsync(paths.tools).then(function(that){
-      // Run shell commands.
-      var commands = {
-        gitInit: '(cd ' + paths.project + '; git init)',
-        fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
-        symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
-        drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
-        drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public'
-      };
+    fse.mkdirsAsync(paths.tools).then(function(){
+        // Run shell commands.
+        var commands = {
+          gitInit: '(cd ' + paths.project + '; git init)',
+          fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
+          symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
+          drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
+          drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public'
+        };
 
-      that._runCommands(commands);
+        this._runCommands(commands);
 
-      // Copy tpl files.
-      var tplFiles = {
-        from : 'drupal/_fabfile.yaml',
-        to : 'projects/' + that.answer.name + '/fabfile.yaml',
-        values: {
-          name: that.answer.name
-        }
-      };
-      //that._copyTplFiles(commands);
-
-      /*
-      that.fs.copyTpl(
-        that.templatePath('drupal/_gitignore'),
-        that.destinationPath('projects/' + that.answer.name + '/.gitignore'),
-        { name: that.answer.name }
-      );
-      */
-    });
+        // Copy tpl files.
+        var tplFiles = {
+          0:{
+            from : 'drupal/_fabfile.yaml',
+            to : 'projects/' + this.answer.name + '/fabfile.yaml',
+            values: {
+              name: this.answer.name
+            },
+          },
+          1:{
+            from : 'drupal/_gitignore',
+            to : 'projects/' + this.answer.name + '/.gitignore',
+            values: {
+              name: this.answer.name
+            }
+          }
+        };
+        that._copyTplFiles(commands);
+      }
+    .bind(this));
   },
 
 
