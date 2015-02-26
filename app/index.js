@@ -81,7 +81,7 @@ module.exports = generators.Base.extend({
     });
 
     if (dirs.length === 0) {
-      return 222;
+      callback(222);
     }
 
     var ports = [];
