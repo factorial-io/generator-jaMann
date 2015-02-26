@@ -80,11 +80,11 @@ module.exports = generators.Base.extend({
   // Copy template files.
   _copyTplFiles: function(tplFiles) {
 
-    this.fs.copyTpl(
-      this.templatePath('drupal/_fabfile.yaml'),
-      this.destinationPath('projects/' + this.answer.name + '/fabfile.yaml'),
-      { name: this.answer.name }
-    );
+    var that = this;
+    _.each(tplFiles, function(value, key) {
+      console.log(value);
+      that.fs.copyTpl(that.templatePath(value.from), that.destinationPath(value.to), value.values);
+    });
   },
 
   // Install Drupal.
@@ -117,23 +117,23 @@ module.exports = generators.Base.extend({
         this._runCommands(commands);
 
         // Copy tpl files.
-        var tplFiles = {
-          0:{
+        var tplFiles = [
+          {
             from : 'drupal/_fabfile.yaml',
             to : 'projects/' + this.answer.name + '/fabfile.yaml',
             values: {
               name: this.answer.name
             },
           },
-          1:{
+          {
             from : 'drupal/_gitignore',
             to : 'projects/' + this.answer.name + '/.gitignore',
             values: {
               name: this.answer.name
             }
           }
-        };
-        that._copyTplFiles(commands);
+        ];
+        that._copyTplFiles(tplFiles);
       }
     .bind(this));
   },
