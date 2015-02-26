@@ -64,51 +64,78 @@ module.exports = generators.Base.extend({
     this.log('Installing fabalicious');
   },
 
+
+  // Run commands in shell.
+  _runCommands : function(commands) {
+    var that = this;
+    // Loop through commands.
+    _.each(commands, function(value, key){
+      value = value + ' > /dev/null 2>&1';
+      shell.exec(value, function(code, output, list) {
+        that.log(chalk.green('Running install task for: ' + key));
+      });
+    });
+  },
+
+  // Copy template files.
+  _copyTplFiles: function(tplFiles) {
+
+    var that = this;
+    _.each(tplFiles, function(value, key) {
+      console.log(value);
+      that.fs.copyTpl(that.templatePath(value.from), that.destinationPath(value.to), value.values);
+    });
+  },
+
+  // Install Drupal.
   _installDrupal : function() {
-
-
-
     var paths = this._getPaths(this.answer.name);
     var that = this;
 
     this.log('Installing Drupal');
 
     // Check if the paths.project exists already.
+    // @TODO: do this earlier.
     if (fse.existsSync(paths.project)){
       this.log(chalk.red('Project exists already.'));
       shell.exit(1);
     }
 
-    // Create paths.project.
     fse.mkdirsAsync(paths.tools).then(function(){
-      // Commmands should be configurable.
-      var commands = {
-        gitInit: '(cd ' + paths.project + '; git init)',
-        fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
-        symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
-        drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
-        drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public'
-      };
+        // Run shell commands.
+        var commands = {
+          gitInit: '(cd ' + paths.project + '; git init)',
+          fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
+          symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
+          drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
+          drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          // this won't work async
+          //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
+          //dockerInstall: '(cd ' + paths.project + ' ; fab config:mbb install)'
+        };
 
-      // Loop through commands.
-      _.each(commands, function(value, key){
-        value = value + ' > /dev/null 2>&1';
-        shell.exec(value, function(code, output, list) {
-          that.log(chalk.green('Running install task for: ' + key));
-        });
-      });
+        this._runCommands(commands);
 
-      that.fs.copyTpl(
-        that.templatePath('drupal/_fabfile.yaml'),
-        that.destinationPath('projects/' + that.answer.name + '/fabfile.yaml'),
-        { name: that.answer.name }
-      );
-      that.fs.copyTpl(
-        that.templatePath('drupal/_gitignore'),
-        that.destinationPath('projects/' + that.answer.name + '/.gitignore'),
-        { name: that.answer.name }
-      );
-    });
+        // Copy tpl files.
+        var tplFiles = [
+          {
+            from : 'drupal/_fabfile.yaml',
+            to : 'projects/' + this.answer.name + '/fabfile.yaml',
+            values: {
+              name: this.answer.name
+            },
+          },
+          {
+            from : 'drupal/_gitignore',
+            to : 'projects/' + this.answer.name + '/.gitignore',
+            values: {
+              name: this.answer.name
+            }
+          }
+        ];
+        that._copyTplFiles(tplFiles);
+      }
+    .bind(this));
   },
 
 
@@ -128,7 +155,12 @@ module.exports = generators.Base.extend({
       name: 'name',
       message: 'Name of your project',
       validate: function(input) {
-        return input.match(/^[a-zA-Z0-9_]+$/)? true : 'project name can only contain letters, numbers and underscores';
+        if (input.match(/^[a-zA-Z0-9_]+$/) && input.length > 3 && input.length < 31) {
+          return true;
+        }
+        else {
+          return 'Project name can only contain letters, numbers and underscores and cannot be fewer than 4 or more than 30 characters';
+        }
       },
     }, {
       name: 'projectType',
