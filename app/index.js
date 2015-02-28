@@ -6,6 +6,7 @@ var yosay = require('yosay');
 var _ = require('underscore');
 var fse = require('fs-extra-promise');
 var shell = require('shelljs');
+var cowsay = require("cowsay");
 
 
 module.exports = generators.Base.extend({
@@ -183,7 +184,7 @@ module.exports = generators.Base.extend({
       this[funcName]();
     }
     else {
-      this.log(chalk.red(this.answer.projectType + ' not implemented yet!'));
-      }
+      this.log(cowsay.say({text: 'Sorry! ' + this.answer.projectType + ' not implemented yet!'}));
+    }
   }
 });
