@@ -27,7 +27,7 @@ hosts:
     host: <%= name %>.dev
     user: root
     password: root
-    port: 220
+    port: <%= port %>
     vagrant:
       ip: 33.33.33.13
     # path to drupal's root folder

@@ -4,10 +4,11 @@ var chalk = require('chalk');
 var updateNotifier = require('update-notifier');
 var yosay = require('yosay');
 var _ = require('underscore');
+var fs = require('fs');
 var fse = require('fs-extra-promise');
 var shell = require('shelljs');
+var async = require('async');
 var cowsay = require("cowsay");
-
 
 module.exports = generators.Base.extend({
 
@@ -57,6 +58,76 @@ module.exports = generators.Base.extend({
     };
   },
 
+  _getAvailablePort: function(callback) {
+    var that = this;
+
+    // get all project folders:
+    var rootDir = this._getPaths().base + '/projects';
+    var files = fs.readdirSync(rootDir);
+    var dirs = [];
+    _.each(files, function(file) {
+      if (file[0] !== '.') {
+        var filePath = rootDir + '/' + file;
+        try {
+          var stat = fs.statSync(filePath + '/fabfile.py');
+
+          if(stat.isFile()) {
+             dirs.push(file);
+          }
+        }
+        catch(e) {
+
+        }
+      }
+    });
+
+    if (dirs.length === 0) {
+      callback(222);
+    }
+
+    var ports = [];
+    async.each(dirs, function(dir, done) {
+
+      var cmd = 'cd ' + rootDir + '/' + dir + '; fab  --hide=running config:mbb getProperty:port';
+      shell.exec(cmd, { 'silent': true }, function(code, output) {
+        if (code) {
+          that.log(chalk.red('Could not get port-setting for project ' + dir + ', please update fabalicious.'));
+        }
+        else {
+          var lines = output.split('\n');
+          var foundPort = false;
+
+          lines.reverse();
+          _.each(lines, function(line) {
+            line = line.trim();
+            if ((line.length > 0) && !foundPort) {
+              foundPort = line;
+              console.log('found: ' + foundPort);
+            }
+          });
+          if (foundPort) {
+            ports.push(parseInt(foundPort));
+          }
+        }
+        // notify async that we are finished with this async-task.
+        done();
+      });
+    }, function() {
+      // final callback, when all tasks are finished, compute port.
+      var highestPort = 222;
+      _.each(ports, function(port) {
+        if(port > highestPort) {
+          highestPort = port;
+        }
+      });
+      // notify caller that we are finished.
+      callback(highestPort);
+    });
+
+
+  },
+
+
   _installFabalicious : function() {
     if (!this.options.fabalicious) {
       return false;
@@ -67,22 +138,24 @@ module.exports = generators.Base.extend({
 
 
   // Run commands in shell.
-  _runCommands : function(commands) {
+  _runCommands : function(commands, paths,callback) {
     var that = this;
+
     // Loop through commands.
-    _.each(commands, function(value, key){
-      value = value + ' > /dev/null 2>&1';
-      shell.exec(value, function(code, output, list) {
-        that.log(chalk.green('Running install task for: ' + key));
+    async.each(commands, function(cmd, done){
+      var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') > /dev/null 2>&1';
+      shell.exec(command, function() {
+        that.log(chalk.green('Running install task: ' + cmd.name));
+        done();
       });
-    });
+    }, callback);
   },
 
   // Copy template files.
   _copyTplFiles: function(tplFiles) {
 
     var that = this;
-    _.each(tplFiles, function(value, key) {
+    _.each(tplFiles, function(value) {
       that.fs.copyTpl(that.templatePath(value.from), that.destinationPath(value.to), value.values);
     });
   },
@@ -102,38 +175,61 @@ module.exports = generators.Base.extend({
     }
 
     fse.mkdirsAsync(paths.tools).then(function(){
+
         // Run shell commands.
-        var commands = {
-          gitInit: '(cd ' + paths.project + '; git init)',
-          fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git _tools/fabalicious)',
-          symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
-          drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git _tools/docker)',
-          drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+        var commands = [
+          {
+            'name': 'init git',
+            'cmd': 'git init'
+          },
+          {
+            'name': 'add fabalicious as submodule',
+            'cmd': 'git submodule add https://github.com/stmh/fabalicious.git _tools/fabalicious'
+          },
+          {
+            'name': 'create symlink to fabalicious',
+            'cmd': 'ln -s _tools/fabalicious/fabfile.py fabfile.py'
+          },
+          {
+            'name': 'add drupal-docker as submodule',
+            'cmd': 'git submodule add https://github.com/stmh/drupal-docker.git _tools/docker',
+          },
+          {
+            'name': 'download drupal',
+            'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          }
           // this won't work async
           //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
           //dockerInstall: '(cd ' + paths.project + ' ; fab config:mbb install)'
-        };
-
-        this._runCommands(commands);
-
-        // Copy tpl files.
-        var tplFiles = [
-          {
-            from : 'drupal/_fabfile.yaml',
-            to : 'projects/' + this.answer.name + '/fabfile.yaml',
-            values: {
-              name: this.answer.name
-            },
-          },
-          {
-            from : 'drupal/_gitignore',
-            to : 'projects/' + this.answer.name + '/.gitignore',
-            values: {
-              name: this.answer.name
-            }
-          }
         ];
-        that._copyTplFiles(tplFiles);
+
+
+        this._runCommands(commands, paths, function() {
+
+          // Copy tpl files.
+          this._getAvailablePort(function(port) {
+
+            var values = {
+              name: this.answer.name,
+              port: port +1
+            };
+
+            var tplFiles = [
+              {
+                from : 'drupal/_fabfile.yaml',
+                to : 'projects/' + this.answer.name + '/fabfile.yaml',
+                values: values
+              },
+              {
+                from : 'drupal/_gitignore',
+                to : 'projects/' + this.answer.name + '/.gitignore',
+                values: values
+              }
+            ];
+
+            that._copyTplFiles(tplFiles);
+          }.bind(this));
+        }.bind(this));
       }
     .bind(this));
   },
