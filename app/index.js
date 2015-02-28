@@ -143,7 +143,13 @@ module.exports = generators.Base.extend({
 
     // Loop through commands.
     async.each(commands, function(cmd, done){
-      var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') > /dev/null 2>&1';
+      if (cmd.interactive){
+        var surpress = false;
+      }else{
+        var surpress = '> /dev/null 2>&1';
+      }
+
+      var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') ' + surpress;
       shell.exec(command, function() {
         that.log(chalk.green('Running install task: ' + cmd.name));
         done();
@@ -197,7 +203,13 @@ module.exports = generators.Base.extend({
           {
             'name': 'download drupal',
             'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          },
+          {
+            'name': 'Vagrant provision',
+            'cmd': 'vagrant hostmanager',
+            'interactive': true,
           }
+
           // this won't work async
           //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
           //dockerInstall: '(cd ' + paths.project + ' ; fab config:mbb install)'
