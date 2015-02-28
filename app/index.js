@@ -82,7 +82,6 @@ module.exports = generators.Base.extend({
 
     var that = this;
     _.each(tplFiles, function(value, key) {
-      console.log(value);
       that.fs.copyTpl(that.templatePath(value.from), that.destinationPath(value.to), value.values);
     });
   },
@@ -105,9 +104,9 @@ module.exports = generators.Base.extend({
         // Run shell commands.
         var commands = {
           gitInit: '(cd ' + paths.project + '; git init)',
-          fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious)',
+          fabalicious: '(cd ' + paths.project + ' ; git submodule add https://github.com/stmh/fabalicious.git _tools/fabalicious)',
           symlinkFabalicious: '(cd ' + paths.project + '; ln -s _tools/fabalicious/fabfile.py fabfile.py)',
-          drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker)',
+          drupaldocker: '(cd ' + paths.project + '; git submodule add https://github.com/stmh/drupal-docker.git _tools/docker)',
           drupalDownload: 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
           // this won't work async
           //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
@@ -137,7 +136,6 @@ module.exports = generators.Base.extend({
       }
     .bind(this));
   },
-
 
 
   // Prompt for options.
