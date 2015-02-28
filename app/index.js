@@ -8,6 +8,7 @@ var fs = require('fs');
 var fse = require('fs-extra-promise');
 var shell = require('shelljs');
 var async = require('async');
+var cowsay = require("cowsay");
 
 module.exports = generators.Base.extend({
 
@@ -126,6 +127,7 @@ module.exports = generators.Base.extend({
 
   },
 
+
   _installFabalicious : function() {
     if (!this.options.fabalicious) {
       return false;
@@ -138,8 +140,6 @@ module.exports = generators.Base.extend({
   // Run commands in shell.
   _runCommands : function(commands, paths,callback) {
     var that = this;
-
-    console.log(paths);
 
     // Loop through commands.
     async.each(commands, function(cmd, done){
@@ -175,6 +175,7 @@ module.exports = generators.Base.extend({
     }
 
     fse.mkdirsAsync(paths.tools).then(function(){
+
         // Run shell commands.
         var commands = [
           {
@@ -183,7 +184,7 @@ module.exports = generators.Base.extend({
           },
           {
             'name': 'add fabalicious as submodule',
-            'cmd': 'git submodule add https://github.com/stmh/fabalicious.git ' + paths.tools + '/fabalicious'
+            'cmd': 'git submodule add https://github.com/stmh/fabalicious.git _tools/fabalicious'
           },
           {
             'name': 'create symlink to fabalicious',
@@ -191,7 +192,7 @@ module.exports = generators.Base.extend({
           },
           {
             'name': 'add drupal-docker as submodule',
-            'cmd': 'git submodule add https://github.com/stmh/drupal-docker.git ' + paths.tools + '/docker',
+            'cmd': 'git submodule add https://github.com/stmh/drupal-docker.git _tools/docker',
           },
           {
             'name': 'download drupal',
@@ -232,7 +233,6 @@ module.exports = generators.Base.extend({
       }
     .bind(this));
   },
-
 
 
   // Prompt for options.
@@ -280,7 +280,7 @@ module.exports = generators.Base.extend({
       this[funcName]();
     }
     else {
-      this.log(chalk.red(this.answer.projectType + ' not implemented yet!'));
-      }
+      this.log(cowsay.say({text: 'Sorry! ' + this.answer.projectType + ' not implemented yet!'}));
+    }
   }
 });
