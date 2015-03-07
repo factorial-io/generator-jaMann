@@ -28,7 +28,7 @@ module.exports = generators.Base.extend({
     // @TODO: do this better.
     // Check for multibasebox.
     if (!fse.existsSync('./projects')){
-      this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/stmh/multibasebox'));
+      this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/factorial-io/multibasebox'));
       shell.exit(1);
     }
 
@@ -190,7 +190,7 @@ module.exports = generators.Base.extend({
           },
           {
             'name': 'add fabalicious as submodule',
-            'cmd': 'git submodule add https://github.com/stmh/fabalicious.git _tools/fabalicious'
+            'cmd': 'git submodule add https://github.com/factorial-io/fabalicious.git _tools/fabalicious'
           },
           {
             'name': 'create symlink to fabalicious',
@@ -198,7 +198,7 @@ module.exports = generators.Base.extend({
           },
           {
             'name': 'add drupal-docker as submodule',
-            'cmd': 'git submodule add https://github.com/stmh/drupal-docker.git _tools/docker',
+            'cmd': 'git submodule add https://github.com/factorial-io/drupal-docker.git _tools/docker',
           },
           {
             'name': 'download drupal',
