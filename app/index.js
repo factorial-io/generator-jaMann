@@ -131,11 +131,19 @@ module.exports = generators.Base.extend({
   // Run commands in shell.
   _runCommands : function(commands, paths,callback) {
     var that = this;
+    var runAsync = true;
+    _.each(commands, function(elem) {
+      if ((elem.async !== undefined) && (elem.async === false)) {
+        runAsync = false;
+      }
+    });
+    var fn = runAsync ? 'each' : 'eachSeries';
+    // console.log('running commands async: ', runAsync);
 
     // Loop through commands.
-    async.each(commands, function(cmd, done){
+    async[fn](commands, function(cmd, done){
       var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') ';
-
+      that.log('starting task: ' + cmd.name);
       shell.exec(command, {'silent': 1}, function(code, output) {
         if (code === 0) {
           that.log(chalk.green('install task succeeded: ' + cmd.name));
@@ -160,37 +168,78 @@ module.exports = generators.Base.extend({
 
   _installCommon: function(paths, commands, templates, values, cb) {
     var that = this;
+
+    // available commands is an array, holding all available commands. YOu can specify slots in which the
+    // command should be run, lower slots gets executed earlier. If you specify
+    // async: false, then all commands are executed serially, not in parallel.
+    // We use slot 900 for all git-related commands, as these may not be executed in parallel.
+
     var availableCommands = {
       'gitInit': [
         {
           'name': 'init git',
-          'cmd': 'git init'
-        }
+          'cmd': 'git init',
+          'slot': 1
+        },
+        {
+          'name': 'commit to git',
+          'cmd': 'git commit -m "Initial commit."',
+          'slot': 1000
+        },
+
       ],
       'fabalicious': [
         {
           'name': 'add fabalicious as submodule',
-          'cmd': 'git submodule add -f https://github.com/factorial-io/fabalicious.git _tools/fabalicious'
+          'cmd': 'git submodule add -f https://github.com/factorial-io/fabalicious.git _tools/fabalicious',
+          'slot': 2
         },
         {
           'name': 'create symlink to fabalicious',
-          'cmd': 'ln -s _tools/fabalicious/fabfile.py fabfile.py'
+          'cmd': 'ln -s _tools/fabalicious/fabfile.py fabfile.py',
+          'slot': 3
+        },
+        {
+          'name': 'add fabfile.py to git',
+          'cmd': 'git add fabfile.py',
+          'slot': 900,
+          'async': false
         },
       ],
       'drupal': [
         {
           'name': 'add drupal-docker as submodule',
           'cmd': 'git submodule add -f https://github.com/factorial-io/drupal-docker.git _tools/docker',
+          'slot': 2
         },
         {
           'name': 'download drupal',
           'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          'slot': 2
+        },
+        {
+          'name': 'add drupal to git',
+          'cmd': 'git add public',
+          'slot': 900,
+          'async': false
+        },
+        {
+          'name': 'install drupal database',
+          'cmd': 'fab config:mbb install:ask=0',
+          'slot': 11,
         },
       ],
+      'runDocker': [
+        {
+          'name': 'run docker',
+          'cmd': 'fab config:mbb docker:run',
+          'slot': 10,
+        }],
       'vagrantProvision': [
         {
           'name': 'Vagrant provision',
-          'cmd': 'cd ../..; echo ' + values.password + ' | sudo -S vagrant hostmanager'
+          'cmd': 'cd ../..; echo ' + values.password + ' | sudo -S vagrant hostmanager',
+          'slot': 1
         }
       ]
     };
@@ -200,7 +249,12 @@ module.exports = generators.Base.extend({
     _.each(commands, function(command) {
       if (availableCommands[command]) {
         // Add the commands to the list
-        commandsToExecute.push.apply(commandsToExecute, availableCommands[command]);
+        _.each(availableCommands[command], function(cmd) {
+          if (!commandsToExecute[cmd.slot]) {
+            commandsToExecute[cmd.slot] = [];
+          }
+          commandsToExecute[cmd.slot].push(cmd);
+        });
       }
       else {
         that.log(chalk.red('Unknown command: ' + command));
@@ -209,18 +263,39 @@ module.exports = generators.Base.extend({
 
     var tplFiles = [];
     _.each(templates, function(target, source) {
+      commandsToExecute[900].push({
+        'name': 'add ' + target + ' to git',
+        'cmd': 'git add ' + target,
+        'slot': 900,
+        'async': false
+      });
+
       tplFiles.push({
         from: source,
         to: paths.projectRelative + '/' + target,
         values: values
       });
     });
+
+    // copy tpl files first.
     this._copyTplFiles(tplFiles);
 
-    this._runCommands(commandsToExecute, paths, function() {
-      cb();
-    });
+    var slots = Object.keys(commandsToExecute);
+    var currentSlotNdx = 0;
 
+    async.whilst(
+      function() { return currentSlotNdx < slots.length; },
+      function(callback) {
+        // console.log('running commands in slot ' + slots[currentSlotNdx]);
+        that._runCommands(commandsToExecute[slots[currentSlotNdx]], paths, function() {
+          currentSlotNdx++;
+          callback();
+        });
+      },
+      function() {
+        cb();
+      }
+    );
   },
 
   // Install Drupal.
@@ -235,7 +310,7 @@ module.exports = generators.Base.extend({
 
         this.answer.port = port +1;
 
-        var commands = ['gitInit', 'fabalicious', 'drupal', 'vagrantProvision'];
+        var commands = ['gitInit', 'fabalicious', 'drupal', 'runDocker', 'vagrantProvision'];
         var templates = {
           'drupal/_fabfile.yaml' : 'fabfile.yaml',
           'drupal/_gitignore': '.gitignore'
