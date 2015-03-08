@@ -158,7 +158,7 @@ module.exports = generators.Base.extend({
     });
   },
 
-  _installCommon: function(paths, commands, templates, values) {
+  _installCommon: function(paths, commands, templates, values, cb) {
     var that = this;
     var availableCommands = {
       'gitInit': [
@@ -215,9 +215,10 @@ module.exports = generators.Base.extend({
         values: values
       });
     });
+    this._copyTplFiles(tplFiles);
 
     this._runCommands(commandsToExecute, paths, function() {
-      that._copyTplFiles(tplFiles);
+      cb();
     });
 
   },
@@ -239,7 +240,9 @@ module.exports = generators.Base.extend({
           'drupal/_fabfile.yaml' : 'fabfile.yaml',
           'drupal/_gitignore': '.gitignore'
         };
-        this._installCommon(paths, commands, templates, values);
+        this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
+        }.bind(this));
       }.bind(this));
     }.bind(this));
   },
@@ -264,7 +267,9 @@ module.exports = generators.Base.extend({
           'simple-webserver/_site-enabled.conf': 'sites-enabled/' + this.answer.name + '.conf',
 
         };
-        this._installCommon(paths, commands, templates, values);
+        this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
+        }.bind(this));
       }.bind(this));
     }.bind(this));
   },
