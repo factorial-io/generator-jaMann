@@ -8,7 +8,7 @@ var fs = require('fs');
 var fse = require('fs-extra-promise');
 var shell = require('shelljs');
 var async = require('async');
-var cowsay = require("cowsay");
+var cowsay = require('cowsay');
 
 module.exports = generators.Base.extend({
 
@@ -54,7 +54,8 @@ module.exports = generators.Base.extend({
     return {
       'base': base,
       'tools': base + '/projects/' + projectName + '/_tools',
-      'project': base + '/projects/' + projectName
+      'project': base + '/projects/' + projectName,
+      'projectRelative': 'projects/' + projectName
     };
   },
 
@@ -102,7 +103,7 @@ module.exports = generators.Base.extend({
             line = line.trim();
             if ((line.length > 0) && !foundPort) {
               foundPort = line;
-              console.log('found: ' + foundPort);
+              // console.log('found: ' + foundPort);
             }
           });
           if (foundPort) {
@@ -127,25 +128,30 @@ module.exports = generators.Base.extend({
 
   },
 
-
-  _installFabalicious : function() {
-    if (!this.options.fabalicious) {
-      return false;
-    }
-
-    this.log('Installing fabalicious');
-  },
-
-
   // Run commands in shell.
   _runCommands : function(commands, paths,callback) {
     var that = this;
+    var runAsync = true;
+    _.each(commands, function(elem) {
+      if ((elem.async !== undefined) && (elem.async === false)) {
+        runAsync = false;
+      }
+    });
+    var fn = runAsync ? 'each' : 'eachSeries';
+    // console.log('running commands async: ', runAsync);
 
     // Loop through commands.
-    async.each(commands, function(cmd, done){
-      var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') > /dev/null 2>&1';
-      shell.exec(command, function() {
-        that.log(chalk.green('Running install task: ' + cmd.name));
+    async[fn](commands, function(cmd, done){
+      var command = '(cd ' + paths.project + '; ' + cmd.cmd + ') ';
+      that.log('starting task: ' + cmd.name);
+      shell.exec(command, {'silent': 1}, function(code, output) {
+        if (code === 0) {
+          that.log(chalk.green('install task succeeded: ' + cmd.name));
+        } else {
+          that.log(chalk.red('install task failed: ' + cmd.name));
+
+          that.log(output);
+        }
         done();
       });
     }, callback);
@@ -160,78 +166,187 @@ module.exports = generators.Base.extend({
     });
   },
 
+  _installCommon: function(paths, commands, templates, values, cb) {
+    var that = this;
+
+    // available commands is an array, holding all available commands. YOu can specify slots in which the
+    // command should be run, lower slots gets executed earlier. If you specify
+    // async: false, then all commands are executed serially, not in parallel.
+    // We use slot 900 for all git-related commands, as these may not be executed in parallel.
+
+    var availableCommands = {
+      'gitInit': [
+        {
+          'name': 'init git',
+          'cmd': 'git init',
+          'slot': 1
+        },
+        {
+          'name': 'commit to git',
+          'cmd': 'git commit -m "Initial commit."',
+          'slot': 1000
+        },
+
+      ],
+      'fabalicious': [
+        {
+          'name': 'add fabalicious as submodule',
+          'cmd': 'git submodule add -f https://github.com/factorial-io/fabalicious.git _tools/fabalicious',
+          'slot': 2
+        },
+        {
+          'name': 'create symlink to fabalicious',
+          'cmd': 'ln -s _tools/fabalicious/fabfile.py fabfile.py',
+          'slot': 3
+        },
+        {
+          'name': 'add fabfile.py to git',
+          'cmd': 'git add fabfile.py',
+          'slot': 900,
+          'async': false
+        },
+      ],
+      'drupal': [
+        {
+          'name': 'add drupal-docker as submodule',
+          'cmd': 'git submodule add -f https://github.com/factorial-io/drupal-docker.git _tools/docker',
+          'slot': 2
+        },
+        {
+          'name': 'download drupal',
+          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          'slot': 2
+        },
+        {
+          'name': 'add drupal to git',
+          'cmd': 'git add public',
+          'slot': 900,
+          'async': false
+        },
+        {
+          'name': 'install drupal database',
+          'cmd': 'fab config:mbb install:ask=0',
+          'slot': 11,
+        },
+      ],
+      'runDocker': [
+        {
+          'name': 'run docker',
+          'cmd': 'fab config:mbb docker:run',
+          'slot': 10,
+        }],
+      'vagrantProvision': [
+        {
+          'name': 'Vagrant provision',
+          'cmd': 'cd ../..; echo "' + values.password + '" | sudo -S vagrant hostmanager',
+          'slot': 1
+        }
+      ]
+    };
+
+    var commandsToExecute = [];
+
+    _.each(commands, function(command) {
+      if (availableCommands[command]) {
+        // Add the commands to the list
+        _.each(availableCommands[command], function(cmd) {
+          if (!commandsToExecute[cmd.slot]) {
+            commandsToExecute[cmd.slot] = [];
+          }
+          commandsToExecute[cmd.slot].push(cmd);
+        });
+      }
+      else {
+        that.log(chalk.red('Unknown command: ' + command));
+      }
+    });
+
+    var tplFiles = [];
+    _.each(templates, function(target, source) {
+      commandsToExecute[900].push({
+        'name': 'add ' + target + ' to git',
+        'cmd': 'git add ' + target,
+        'slot': 900,
+        'async': false
+      });
+
+      tplFiles.push({
+        from: source,
+        to: paths.projectRelative + '/' + target,
+        values: values
+      });
+    });
+
+    // copy tpl files first.
+    this._copyTplFiles(tplFiles);
+
+    var slots = Object.keys(commandsToExecute);
+    var currentSlotNdx = 0;
+
+    async.whilst(
+      function() { return currentSlotNdx < slots.length; },
+      function(callback) {
+        // console.log('running commands in slot ' + slots[currentSlotNdx]);
+        that._runCommands(commandsToExecute[slots[currentSlotNdx]], paths, function() {
+          currentSlotNdx++;
+          callback();
+        });
+      },
+      function() {
+        cb();
+      }
+    );
+  },
+
   // Install Drupal.
   _installDrupal : function() {
     var paths = this._getPaths(this.answer.name);
-    var that = this;
+    var values = this.answer;
 
     this.log('Installing Drupal');
 
-    // Check if the paths.project exists already.
-    // @TODO: do this earlier.
-    if (fse.existsSync(paths.project)){
-      this.log(chalk.red('Project exists already.'));
-      shell.exit(1);
-    }
+    fse.mkdirsAsync(paths.tools).then(function(){
+      this._getAvailablePort(function(port) {
+
+        this.answer.port = port +1;
+
+        var commands = ['gitInit', 'fabalicious', 'drupal', 'runDocker', 'vagrantProvision'];
+        var templates = {
+          'drupal/_fabfile.yaml' : 'fabfile.yaml',
+          'drupal/_gitignore': '.gitignore'
+        };
+        this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  },
+
+  _installSimpleWebserver: function() {
+
+    var paths = this._getPaths(this.answer.name);
+    var values = this.answer;
+
+    this.log('Installing a simple nginx based webserver');
 
     fse.mkdirsAsync(paths.tools).then(function(){
+      this._getAvailablePort(function(port) {
 
-        // Run shell commands.
-        var commands = [
-          {
-            'name': 'init git',
-            'cmd': 'git init'
-          },
-          {
-            'name': 'add fabalicious as submodule',
-            'cmd': 'git submodule add https://github.com/factorial-io/fabalicious.git _tools/fabalicious'
-          },
-          {
-            'name': 'create symlink to fabalicious',
-            'cmd': 'ln -s _tools/fabalicious/fabfile.py fabfile.py'
-          },
-          {
-            'name': 'add drupal-docker as submodule',
-            'cmd': 'git submodule add https://github.com/factorial-io/drupal-docker.git _tools/docker',
-          },
-          {
-            'name': 'download drupal',
-            'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
-          }
-          // this won't work async
-          //dockerRun: '(cd ' + paths.project + ' ; fab config:mbb docker:run)',
-          //dockerInstall: '(cd ' + paths.project + ' ; fab config:mbb install)'
-        ];
+        this.answer.port = port +1;
 
+        var commands = ['gitInit', 'fabalicious', 'vagrantProvision'];
+        var templates = {
+          'simple-webserver/_fabfile.yaml' : 'fabfile.yaml',
+          'simple-webserver/_gitignore': '.gitignore',
+          'simple-webserver/_index.html': 'public/index.html',
+          'simple-webserver/_site-enabled.conf': 'sites-enabled/' + this.answer.name + '.conf',
 
-        this._runCommands(commands, paths, function() {
-
-          // Copy tpl files.
-          this._getAvailablePort(function(port) {
-
-            var values = {
-              name: this.answer.name,
-              port: port +1
-            };
-
-            var tplFiles = [
-              {
-                from : 'drupal/_fabfile.yaml',
-                to : 'projects/' + this.answer.name + '/fabfile.yaml',
-                values: values
-              },
-              {
-                from : 'drupal/_gitignore',
-                to : 'projects/' + this.answer.name + '/.gitignore',
-                values: values
-              }
-            ];
-
-            that._copyTplFiles(tplFiles);
-          }.bind(this));
+        };
+        this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
         }.bind(this));
-      }
-    .bind(this));
+      }.bind(this));
+    }.bind(this));
   },
 
 
@@ -267,6 +382,14 @@ module.exports = generators.Base.extend({
         'Middleman',
         { 'value': 'SimpleWebserver', 'name': 'Simple Webserver'}
       ]
+    },
+    {
+      name: 'password',
+      type: 'password',
+      message: 'What\'s your admin-password? (It\'s needed for vagrant)',
+      validate: function() {
+        return true;
+      },
     }], function (answer) {
       that.answer = answer;
       cb();
