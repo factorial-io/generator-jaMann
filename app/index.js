@@ -238,7 +238,7 @@ module.exports = generators.Base.extend({
       'vagrantProvision': [
         {
           'name': 'Vagrant provision',
-          'cmd': 'cd ../..; echo ' + values.password + ' | sudo -S vagrant hostmanager',
+          'cmd': 'cd ../..; echo "' + values.password + '" | sudo -S vagrant hostmanager',
           'slot': 1
         }
       ]
