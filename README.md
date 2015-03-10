@@ -33,7 +33,7 @@ npm install -g generator-jamann
 Finally, initiate the generator:
 
 ```bash
-yo jaMann
+yo jamann
 ```
 
 ### Getting To Know Yeoman
