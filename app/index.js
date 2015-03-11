@@ -213,7 +213,7 @@ module.exports = generators.Base.extend({
         },
         {
           'name': 'download drupal',
-          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public',
+          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public ' + values.drupalVersion,
           'slot': 2
         },
         {
@@ -298,18 +298,26 @@ module.exports = generators.Base.extend({
   },
 
   // Install Drupal.
-  _installDrupal : function() {
+  _installDrupal : function(version) {
+
     var paths = this._getPaths(this.answer.name);
     var values = this.answer;
 
-    this.log('Installing Drupal');
+    if (version === undefined) {
+      version = 7;
+    }
+
+    this.log('Installing Drupal ' + version);
 
     fse.mkdirsAsync(paths.tools).then(function(){
       this._getAvailablePort(function(port) {
 
-        this.answer.port = port +1;
+        this.answer.port = port + 1;
+        this.answer.drupalVersion = '--default-major=' + version;
 
         var commands = ['gitInit', 'fabalicious', 'drupal', 'runDocker', 'vagrantProvision'];
+
+
         var templates = {
           'drupal/_fabfile.yaml' : 'fabfile.yaml',
           'drupal/_gitignore': '.gitignore'
@@ -319,6 +327,11 @@ module.exports = generators.Base.extend({
         }.bind(this));
       }.bind(this));
     }.bind(this));
+  },
+
+  // Install Drupal 8.
+  _installDrupal8 : function() {
+    this._installDrupal(8);
   },
 
   _installSimpleWebserver: function() {
@@ -377,6 +390,7 @@ module.exports = generators.Base.extend({
       message: 'What kind of docker container do you wish?',
       choices: [
         'Drupal',
+        {'value': 'Drupal8', 'name': 'Drupal 8'},
         'Wordpress',
         'Middleman',
         { 'value': 'SimpleWebserver', 'name': 'Simple Webserver'}
