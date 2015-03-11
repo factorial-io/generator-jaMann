@@ -14,10 +14,7 @@ module.exports = generators.Base.extend({
 
   constructor: function () {
     generators.Base.apply(this, arguments);
-
-    this.options = {
-      fabalicious: true,
-    };
+    this.option('force');
   },
 
   initializing: function () {
@@ -25,28 +22,30 @@ module.exports = generators.Base.extend({
     var pkg = require('../package.json');
     updateNotifier({pkg: pkg}).notify();
 
-    // @TODO: do this better.
-    // Check for multibasebox.
-    if (!fse.existsSync('./projects')){
-      this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/factorial-io/multibasebox'));
-      shell.exit(1);
-    }
-
-    // Check requirements.
-    var requirements = {
-      pip: 'brew install python',
-      fab: 'pip install fabric',
-      drush: 'brew install drush',
-      // @TODO: Need a check for pyyaml.
-      //pyyaml: 'pip install pyyaml',
-    };
-    _.each(requirements, function(value, key){
-      if (!shell.which(key)) {
-        console.log('Sorry, this script requires ' + key + '. Install it on a Mac using: ' + value);
+    // Disable checks in forced mode.
+    if (_.isUndefined(this.options.force)){
+      // @TODO: do this better.
+      // Check for multibasebox.
+      if (!fse.existsSync('./projects')){
+        this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/factorial-io/multibasebox'));
         shell.exit(1);
       }
-    });
 
+      // Check requirements.
+      var requirements = {
+        pip: 'brew install python',
+        fab: 'pip install fabric',
+        drush: 'brew install drush',
+        // @TODO: Need a check for pyyaml.
+        //pyyaml: 'pip install pyyaml',
+      };
+      _.each(requirements, function(value, key){
+        if (!shell.which(key)) {
+          console.log('Sorry, this script requires ' + key + '. Install it on a Mac using: ' + value);
+          shell.exit(1);
+        }
+      });
+    }
   },
 
   _getPaths : function(projectName) {

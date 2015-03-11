@@ -9,10 +9,11 @@ describe('jaMann:app', function () {
   before(function (done) {
     helpers.run(path.join(__dirname, '../app'))
       .inDir(path.join(os.tmpdir(), './temp-test'))
-      //.withOptions({ 'skip-install': true })
+      .withOptions({ 'force': true })
       .withPrompt({
         name: 'name',
-        projectType: 'drupal'
+        projectType: 'drupal',
+        password: ''
       })
       .on('end', done);
   });
@@ -21,6 +22,8 @@ describe('jaMann:app', function () {
     assert.file([
       './name/',
       './name/public/',
+      './name/_tools/fabalicious',
+      './name/fabfile.yaml'
     ]);
   });
 });
