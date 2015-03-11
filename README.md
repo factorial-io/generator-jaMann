@@ -1,4 +1,4 @@
-# generator-jaMann [![Build Status](https://api.travis-ci.org/MuschPusch/generator-jaMann.png?branch=master)](https://travis-ci.org/MuschPusch/generator-jaMann)
+# generator-jaMann [![Build Status](https://api.travis-ci.org/factorial-io/generator-jaMann.png?branch=master)](https://travis-ci.org/factorial-io/generator-jaMann)
 
 
 > [Yeoman](http://yeoman.io) generator
