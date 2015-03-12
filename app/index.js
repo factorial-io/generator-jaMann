@@ -214,7 +214,7 @@ module.exports = generators.Base.extend({
         },
         {
           'name': 'download drupal',
-          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public ' + values.drupalVersion,
+          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public --default-major=' + values.drupalVersion,
           'slot': 2
         },
         {
@@ -314,7 +314,7 @@ module.exports = generators.Base.extend({
       this._getAvailablePort(function(port) {
 
         this.answer.port = port + 1;
-        this.answer.drupalVersion = '--default-major=' + version;
+        this.answer.drupalVersion = version;
 
         var commands = ['gitInit', 'fabalicious', 'drupal', 'runDocker', 'vagrantProvision'];
 
