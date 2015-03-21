@@ -9,6 +9,8 @@ var fse = require('fs-extra-promise');
 var shell = require('shelljs');
 var async = require('async');
 var cowsay = require('cowsay');
+var request = require('request');
+
 
 module.exports = generators.Base.extend({
 
@@ -213,8 +215,8 @@ module.exports = generators.Base.extend({
           'slot': 2
         },
         {
-          'name': 'download drupal',
-          'cmd': 'drush dl drupal --destination=' + paths.project + ' --drupal-project-rename=public --default-major=' + values.drupalVersion,
+          'name': 'download ' + values.distribution,
+          'cmd': 'drush dl ' + values.distribution + ' --destination=' + paths.project + ' --drupal-project-rename=public --default-major=' + values.drupalVersion,
           'slot': 2
         },
         {
@@ -225,7 +227,7 @@ module.exports = generators.Base.extend({
         },
         {
           'name': 'install drupal database',
-          'cmd': 'fab config:mbb install:ask=0',
+          'cmd': 'fab config:mbb install:ask=0,distribution='+values.profile,
           'slot': 11,
         },
       ],
@@ -313,8 +315,15 @@ module.exports = generators.Base.extend({
     fse.mkdirsAsync(paths.tools).then(function(){
       this._getAvailablePort(function(port) {
 
-        this.answer.port = port + 1;
-        this.answer.drupalVersion = version;
+        values.port = port + 1;
+        values.drupalVersion = version;
+        if (!values.distribution) {
+          values.distribution = 'drupal';
+          values.profile = 'minimal';
+        }
+        else {
+          values.profile = values.distribution;
+        }
 
         var commands = ['gitInit', 'fabalicious', 'drupal', 'runDocker', 'vagrantProvision'];
 
@@ -333,6 +342,11 @@ module.exports = generators.Base.extend({
   // Install Drupal 8.
   _installDrupal8 : function() {
     this._installDrupal(8);
+  },
+
+  // Install Drupal 8.
+  _installDrupalDistribution : function() {
+    this._installDrupal();
   },
 
   _installSimpleWebserver: function() {
@@ -385,17 +399,36 @@ module.exports = generators.Base.extend({
           return 'Project name can only contain letters, numbers and underscores and cannot be fewer than 4 or more than 30 characters';
         }
       },
-    }, {
+    },
+    {
       name: 'projectType',
       type: 'list',
       message: 'What kind of docker container do you wish?',
       choices: [
         'Drupal',
         {'value': 'Drupal8', 'name': 'Drupal 8'},
+        {'value': 'DrupalDistribution', 'name': 'A drupal-based distribution'},
         'Wordpress',
         'Middleman',
         { 'value': 'SimpleWebserver', 'name': 'Simple Webserver'}
       ]
+    },
+    {
+      when: function(response) {
+        return (response.projectType === 'DrupalDistribution');
+      },
+      name: 'distribution',
+      type: 'input',
+      message: 'Name of the drupal-distribution to install',
+      validate: function(input) {
+        var done = this.async();
+        request('http://drupal.org/project/'+input, function (err, resp) {
+          if (resp.statusCode === 200) {
+            done(true);
+          }
+          done('Could not find distribution \'' + input + '\' at drupal.org');
+        });
+      },
     },
     {
       name: 'password',

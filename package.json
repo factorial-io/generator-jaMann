@@ -33,7 +33,8 @@
     "underscore": "^1.8.1",
     "update-notifier": "^0.3.0",
     "yeoman-generator": "^0.18.0",
-    "yosay": "^0.3.0"
+    "yosay": "^0.3.0",
+    "request": "^2.53.0"
   },
   "devDependencies": {
     "mocha": "*"
