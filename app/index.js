@@ -33,22 +33,26 @@ module.exports = generators.Base.extend({
       this.log(chalk.red('You must be in your multibasebox folder. Multibasebox not installed? We will create a generator for that! Until that please follow the instructions here: github.com/factorial-io/multibasebox'));
       shell.exit(1);
     }
+  },
 
+  _checkRequirements: function(cmds) {
     // Check requirements.
     var requirements = {
       pip: 'brew install python',
       fab: 'pip install fabric',
       drush: 'brew install drush',
+      wp: 'curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar\nchmod +x wp-cli.phar\nsudo mv wp-cli.phar /usr/local/bin/wp'
+
       // @TODO: Need a check for pyyaml.
       //pyyaml: 'pip install pyyaml',
     };
-    _.each(requirements, function(value, key){
+    _.each(cmds, function(key) {
+      var command = requirements[key];
       if (!shell.which(key)) {
-        console.log('Sorry, this script requires ' + key + '. Install it on a Mac using: ' + value);
+        console.log('Sorry, this script requires ' + key + '. Install it on a Mac using: ' + command);
         shell.exit(1);
       }
     });
-
   },
 
   _getPaths : function(projectName) {
@@ -243,7 +247,30 @@ module.exports = generators.Base.extend({
           'cmd': 'cd ../..; echo "' + values.password + '" | sudo -S vagrant hostmanager',
           'slot': 1
         }
-      ]
+      ],
+      'wordpress': [
+        {
+          'name': 'add drupal-docker as submodule',
+          'cmd': 'git submodule add -f https://github.com/factorial-io/drupal-docker.git _tools/docker',
+          'slot': 2
+        },
+        {
+          'name': 'download wordpress',
+          'cmd': 'wp core download --path=' + paths.project + '/public',
+          'slot': 2
+        },
+        {
+          'name': 'install wordpress database',
+          'cmd': 'fab config:mbb install:ask=0',
+          'slot': 11,
+        },
+        {
+          'name': 'add wordpress to git',
+          'cmd': 'git add public',
+          'slot': 900,
+          'async': false
+        }
+      ],
     };
 
     var commandsToExecute = [];
@@ -302,7 +329,7 @@ module.exports = generators.Base.extend({
 
   // Install Drupal.
   _installDrupal : function(version) {
-
+    this._checkRequirements(['pip', 'fab', 'drush']);
     var paths = this._getPaths(this.answer.name);
     var values = this.answer;
 
@@ -331,6 +358,37 @@ module.exports = generators.Base.extend({
         var templates = {
           'drupal/_fabfile.yaml' : 'fabfile.yaml',
           'drupal/_gitignore': '.gitignore'
+        };
+        this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  },
+
+  // Install Wordpress.
+  _installWordpress : function() {
+
+    this._checkRequirements(['pip', 'fab', 'wp']);
+
+    var paths = this._getPaths(this.answer.name);
+    var values = this.answer;
+
+    this.log('Installing Wordpress');
+
+    fse.mkdirsAsync(paths.tools).then(function(){
+      this._getAvailablePort(function(port) {
+
+        values.port = port + 1;
+
+
+        var commands = ['gitInit', 'fabalicious', 'wordpress', 'runDocker', 'vagrantProvision'];
+
+
+        var templates = {
+          'wordpress/_fabfile.yaml' : 'fabfile.yaml',
+          'wordpress/_gitignore': '.gitignore',
+          'wordpress/_wp-config.php': 'public/wp-config.php'
         };
         this._installCommon(paths, commands, templates, values, function() {
           this.log(chalk.green('Scaffolding finished.'));
