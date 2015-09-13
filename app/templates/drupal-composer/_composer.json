@@ -1,0 +1,160 @@
+{
+  "name": "factorial/<%= name %>",
+  "description": "<%= name %>",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packagist.drupal-composer.org/"
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "library/backbone",
+        "version": "1.0.0",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://github.com/jashkenas/backbone/archive/1.0.0.zip",
+          "type": "zip"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "library/underscore",
+        "version": "1.5.2",
+        "type": "drupal-library",
+        "dist": {
+          "url": "https://github.com/jashkenas/underscore/archive/1.5.2.zip",
+          "type": "zip"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "drupal/list_predefined_options",
+        "version": "7.1.0",
+        "type": "drupal-module",
+        "dist": {
+          "url": "http://ftp.drupal.org/files/projects/list_predefined_options-7.x-1.0.tar.gz",
+          "type": "tar"
+        }
+      }
+    },
+        {
+      "type": "package",
+      "package": {
+        "name": "drupal/xhprof",
+        "version": "7.1-dev",
+        "type": "drupal-module",
+        "source": {
+          "url": "git://git.drupal.org/project/XHProf.git",
+          "type": "git",
+          "reference": "7.x-1.x"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "drupal/focal_point",
+        "version": "7.1-dev",
+        "type": "drupal-module",
+        "source": {
+          "url": "git://git.drupal.org/project/focal_point.git",
+          "type": "git",
+          "reference": "7.x-1.x"
+        }
+      }
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/tcm.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/responsive_image_styles.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/fabalicious.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/drupal-docker.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/stmh/oxide.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/stmh/MtHaml.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/frontend"
+    }
+
+  ],
+  "require": {
+    "davidbarratt/custom-installer": "dev-master",
+    "derhasi/composer-preserve-paths": "0.1.*",
+    "library/backbone": "1.0.0",
+    "library/underscore": "1.5.2",
+    "drupal/drupal": "7.*",
+    "drupal/admin_views": "7.*",
+    "drupal/coffee": "7.*",
+    "drupal/date": "7.*",
+    "drupal/devel": "7.*",
+    "drupal/entity": "7.*",
+    "drupal/entityreference": "7.*",
+    "drupal/features": "7.*",
+    "drupal/field_tools": "7.*@dev",
+    "drupal/fieldable_panels_panes": "7.*",
+    "drupal/focal_point": "7.*@dev",
+    "drupal/list_predefined_options": "7.*",
+    "drupal/navbar": "7.*",
+    "drupal/panelizer": "7.*",
+    "drupal/panels": "7.*",
+    "drupal/pathauto": "7.*",
+    "drupal/strongarm": "7.*",
+    "drupal/transliteration": "7.*",
+    "drupal/views": "7.*",
+    "drupal/views_bulk_operations": "7.*",
+    "drupal/xhprof": "7.*@dev",
+    "drupal/ember": "7.x@dev",
+    "mthaml/mthaml": "dev-master",
+    "factorial-io/oxide": "dev-master",
+    "factorial-io/frontend": "dev-master",
+    "factorial-io/tcm": "dev-master",
+    "factorial-io/responsive_image_styles": "dev-master",
+    "factorial-io/fabalicious": "dev-master",
+    "factorial-io/drupal-docker": "dev-master"
+  },
+  "extra": {
+    "custom-installer": {
+      "drupal-module": "public/sites/all/modules/contrib/{$name}/",
+      "drupal-theme": "public/sites/all/themes/contrib/{$name}/",
+      "drupal-theme-engine": "public/sites/all/themes/engines/{$name}/",
+      "library": "public/sites/all/libraries/{$name}/",
+      "drupal-library": "public/sites/all/libraries/{$name}/",
+      "drupal-drush": "public/sites/all/drush/{$name}/",
+      "drupal-profile": "public/profiles/{$name}/",
+      "drupal-core": "public/",
+      "factorial-tools": "_tools/{$name}"
+    },
+    "preserve-paths": [
+      "public/sites/all/modules/contrib",
+      "public/sites/all/themes/contrib",
+      "public/sites/all/libraries"
+    ]
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "ln -s _tools/fabalicious/fabfile.py fabfile.py",
+      "mv _tools/drupal-docker _tools/docker"
+    ]
+  }
+}

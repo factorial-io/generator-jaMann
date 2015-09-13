@@ -1,0 +1,4 @@
+fabfile.pyc
+fabfile.yaml.lock
+*/**/.git
+

@@ -38,6 +38,7 @@ module.exports = generators.Base.extend({
   _checkRequirements: function(cmds) {
     // Check requirements.
     var requirements = {
+      composer: 'curl -sS https://getcomposer.org/installer | php',
       pip: 'brew install python',
       fab: 'pip install fabric',
       drush: 'brew install drush',
@@ -212,6 +213,24 @@ module.exports = generators.Base.extend({
           'async': false
         },
       ],
+      'composer': [
+       {
+          'name': 'run composer to install the stack.',
+          'cmd':  'composer install',
+          'slot': 2
+        },
+        {
+          'name': 'add files to git',
+          'cmd': 'git add public _tools vendor',
+          'slot': 900,
+          'async': false
+        },
+        {
+          'name': 'install drupal database',
+          'cmd': 'fab config:mbb install:ask=0,distribution='+values.profile,
+          'slot': 11,
+        },
+      ],
       'drupal': [
         {
           'name': 'add drupal-docker as submodule',
@@ -292,6 +311,9 @@ module.exports = generators.Base.extend({
 
     var tplFiles = [];
     _.each(templates, function(target, source) {
+      if (!commandsToExecute[900]) {
+        commandsToExecute[900] = [];
+      }
       commandsToExecute[900].push({
         'name': 'add ' + target + ' to git',
         'cmd': 'git add ' + target,
@@ -327,6 +349,21 @@ module.exports = generators.Base.extend({
     );
   },
 
+  _installTemplateFiles: function(paths, templates, values) {
+    var tplFiles = [];
+     _.each(templates, function(target, source) {
+      tplFiles.push({
+        from: source,
+        to: paths.projectRelative + '/' + target,
+        values: values
+      });
+    });
+    this._copyTplFiles(tplFiles);
+  },
+
+
+
+
   // Install Drupal.
   _installDrupal : function(version) {
     this._checkRequirements(['pip', 'fab', 'drush']);
@@ -360,6 +397,53 @@ module.exports = generators.Base.extend({
           'drupal/_gitignore': '.gitignore'
         };
         this._installCommon(paths, commands, templates, values, function() {
+          this.log(chalk.green('Scaffolding finished.'));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  },
+
+
+  // Install Drupal via composer
+  _installDrupalComposer : function(version) {
+    this._checkRequirements(['composer', 'pip', 'fab', 'drush']);
+    var paths = this._getPaths(this.answer.name);
+    var values = this.answer;
+
+    if (version === undefined) {
+      version = 7;
+    }
+
+    this.log('Installing Drupal via composer ' + version);
+
+    fse.mkdirsAsync(paths.tools).then(function(){
+      this._getAvailablePort(function(port) {
+
+        values.port = port + 1;
+        values.drupalVersion = version;
+        if (!values.distribution) {
+          values.distribution = 'drupal';
+          values.profile = 'minimal';
+        }
+        else {
+          values.profile = values.distribution;
+        }
+
+        var commands = ['gitInit', 'composer', 'runDocker'];
+
+
+        var templates = {
+          'drupal/_fabfile.yaml' : 'fabfile.yaml',
+          'drupal-composer/_gitignore': '.gitignore',
+          'drupal-composer/_composer.json': 'composer.json',
+        };
+        this._installCommon(paths, commands, templates, values, function() {
+          this._installTemplateFiles(paths, {
+            'drupal-composer/_deploy.info': 'public/sites/all/modules/custom/' + values.name + '_deploy/' + values.name + '_deploy.info',
+            'drupal-composer/_deploy.module': 'public/sites/all/modules/custom/' + values.name + '_deploy/' + values.name + '_deploy.module',
+            'drupal-composer/_deploy.install': 'public/sites/all/modules/custom/' + values.name  + '_deploy/' + values.name + '_deploy.install',
+          }, values);
+
           this.log(chalk.green('Scaffolding finished.'));
         }.bind(this));
       }.bind(this));
@@ -466,6 +550,7 @@ module.exports = generators.Base.extend({
         'Drupal',
         {'value': 'Drupal8', 'name': 'Drupal 8'},
         {'value': 'DrupalDistribution', 'name': 'A drupal-based distribution'},
+        {'value': 'DrupalComposer', 'name': 'Drupal 7 via composer (Factorial Stack)'},
         'Wordpress',
         'Middleman',
         { 'value': 'SimpleWebserver', 'name': 'Simple Webserver'}
