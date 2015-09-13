@@ -1,4 +1,5 @@
 fabfile.pyc
 fabfile.yaml.lock
-*/**/.git
-
+/public/**/.git
+/vendor/**/.git
+/_tools/**/.git

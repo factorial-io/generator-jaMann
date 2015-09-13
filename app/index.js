@@ -221,8 +221,13 @@ module.exports = generators.Base.extend({
         },
         {
           'name': 'add files to git',
+          'cmd': 'git add composer.lock && git commit -m "Adding .gitignore and composer-files."',
+          'slot': 901,
+          'async': false
+        },{
+          'name': 'add files to git',
           'cmd': 'git add public _tools vendor',
-          'slot': 900,
+          'slot': 902,
           'async': false
         },
         {
