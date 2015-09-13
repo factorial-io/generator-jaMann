@@ -33,36 +33,11 @@
     {
       "type": "package",
       "package": {
-        "name": "drupal/list_predefined_options",
-        "version": "7.1.0",
-        "type": "drupal-module",
-        "dist": {
-          "url": "http://ftp.drupal.org/files/projects/list_predefined_options-7.x-1.0.tar.gz",
-          "type": "tar"
-        }
-      }
-    },
-        {
-      "type": "package",
-      "package": {
         "name": "drupal/xhprof",
         "version": "7.1-dev",
         "type": "drupal-module",
         "source": {
           "url": "git://git.drupal.org/project/XHProf.git",
-          "type": "git",
-          "reference": "7.x-1.x"
-        }
-      }
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "drupal/focal_point",
-        "version": "7.1-dev",
-        "type": "drupal-module",
-        "source": {
-          "url": "git://git.drupal.org/project/focal_point.git",
           "type": "git",
           "reference": "7.x-1.x"
         }
@@ -108,6 +83,7 @@
     "drupal/coffee": "7.*",
     "drupal/date": "7.*",
     "drupal/devel": "7.*",
+    "drupal/ember": "7.x@dev",
     "drupal/entity": "7.*",
     "drupal/entityreference": "7.*",
     "drupal/features": "7.*",
@@ -124,7 +100,6 @@
     "drupal/views": "7.*",
     "drupal/views_bulk_operations": "7.*",
     "drupal/xhprof": "7.*@dev",
-    "drupal/ember": "7.x@dev",
     "mthaml/mthaml": "dev-master",
     "factorial-io/oxide": "dev-master",
     "factorial-io/frontend": "dev-master",
@@ -148,7 +123,11 @@
     "preserve-paths": [
       "public/sites/all/modules/contrib",
       "public/sites/all/themes/contrib",
-      "public/sites/all/libraries"
+      "public/sites/all/themes/custom",
+      "public/sites/all/modules/custom",
+      "public/sites/all/libraries",
+      "public/sites/default/settings.php",
+      "public/sites/default/files"
     ]
   },
   "scripts": {
