@@ -419,7 +419,7 @@ module.exports = generators.Base.extend({
       version = 7;
     }
 
-    this.log('Installing Drupal via composer ' + version);
+    this.log('Installing Drupal ' + version + ' via composer');
 
     fse.mkdirsAsync(paths.tools).then(function(){
       this._getAvailablePort(function(port) {
@@ -435,24 +435,41 @@ module.exports = generators.Base.extend({
         }
 
         var commands = ['gitInit', 'composer', 'runDocker'];
+        var templateFolder = 'drupal-' + version + '-composer/';
 
+        var templates = {};
+        templates['drupal/_fabfile.yaml'] = 'fabfile.yaml';
+        templates[templateFolder + '_gitignore'] = '.gitignore';
+        templates[templateFolder + '_composer.json'] = 'composer.json';
 
-        var templates = {
-          'drupal/_fabfile.yaml' : 'fabfile.yaml',
-          'drupal-composer/_gitignore': '.gitignore',
-          'drupal-composer/_composer.json': 'composer.json',
-        };
         this._installCommon(paths, commands, templates, values, function() {
-          this._installTemplateFiles(paths, {
-            'drupal-composer/_deploy.info': 'public/sites/all/modules/custom/' + values.name + '_deploy/' + values.name + '_deploy.info',
-            'drupal-composer/_deploy.module': 'public/sites/all/modules/custom/' + values.name + '_deploy/' + values.name + '_deploy.module',
-            'drupal-composer/_deploy.install': 'public/sites/all/modules/custom/' + values.name  + '_deploy/' + values.name + '_deploy.install',
-          }, values);
+          var templateFiles = {};
+          var targetFolder = 'public/sites/all/modules/custom/' + values.name + '_deploy/';
+          if(version == 8) {
+            targetFolder = 'public/modules/custom/' + values.name + '_deploy/';
+            templateFiles[templateFolder + '_deploy.info.yml']    = targetFolder + values.name + '_deploy.info.yml';
+            templateFiles[templateFolder + '_deploy_composer.json']    = targetFolder + 'composer.json';
+          }
+          else {
+            templateFiles[templateFolder + '_deploy.info']    = targetFolder + values.name + '_deploy.info';
+          }
+          templateFiles[templateFolder + '_deploy.module']  = targetFolder + values.name + '_deploy.module';
+          templateFiles[templateFolder + '_deploy.install'] = targetFolder + values.name + '_deploy.install';
+
+          this._installTemplateFiles(paths, templateFiles, values);
 
           this.log(chalk.green('Scaffolding finished.'));
         }.bind(this));
       }.bind(this));
     }.bind(this));
+  },
+
+  _installDrupal7Composer: function() {
+    this._installDrupalComposer(7);
+  },
+
+  _installDrupal8Composer: function() {
+    this._installDrupalComposer(8);
   },
 
   // Install Wordpress.
@@ -555,7 +572,8 @@ module.exports = generators.Base.extend({
         'Drupal',
         {'value': 'Drupal8', 'name': 'Drupal 8'},
         {'value': 'DrupalDistribution', 'name': 'A drupal-based distribution'},
-        {'value': 'DrupalComposer', 'name': 'Drupal 7 via composer (Factorial Stack)'},
+        {'value': 'Drupal7Composer', 'name': 'Drupal 7 via composer (Factorial Stack)'},
+        {'value': 'Drupal8Composer', 'name': 'Drupal 8 via composer (Factorial Stack)'},
         'Wordpress',
         'Middleman',
         { 'value': 'SimpleWebserver', 'name': 'Simple Webserver'}

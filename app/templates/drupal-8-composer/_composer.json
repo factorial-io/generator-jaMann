@@ -1,0 +1,57 @@
+{
+  "name": "factorial/<%= name %>",
+  "description": "<%= name %>",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packagist.drupal-composer.org/"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/fabalicious.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/drupal-docker.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/factorial-tools-installer-plugin.git"
+    }
+
+  ],
+  "require": {
+    "composer/installers": "~1.0",
+    "factorial-io/factorial-tools-installer-plugin": "~1.0",
+    "derhasi/composer-preserve-paths": "0.1.*",
+    "drupal/drupal": "8.*",
+    "factorial-io/fabalicious": "dev-master",
+    "factorial-io/drupal-docker": "dev-master"
+  },
+  "extra": {
+    "installer-paths": {
+      "public": ["type:drupal-core"],
+      "public/modules/contrib/{$name}": ["type:drupal-module"],
+      "public/profiles/contrib/{$name}": ["type:drupal-profile"],
+      "public/themes/contrib/{$name}": ["type:drupal-theme"],
+      "public/drush/commands/{$name}": ["type:drupal-drush"]
+    },
+    "preserve-paths": [
+      "public/modules/contrib",
+      "public/themes/contrib",
+      "public/themes/custom",
+      "public/modules/custom",
+      "public/libraries",
+      "public/sites/default/settings.php",
+      "public/sites/default/files"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+    "post-install-cmd": [
+      "ln -s _tools/fabalicious/fabfile.py fabfile.py",
+      "mv _tools/drupal-docker _tools/docker"
+    ]
+  }
+}

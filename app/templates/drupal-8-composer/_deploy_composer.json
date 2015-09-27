@@ -1,0 +1,7 @@
+{
+  "name": "factorial/<%= name %>_deploy",
+  "description": "Deployment module",
+  "type": "drupal-module",
+  "require": {
+  }
+}
