@@ -438,7 +438,7 @@ module.exports = generators.Base.extend({
         var templateFolder = 'drupal-' + version + '-composer/';
 
         var templates = {};
-        templates['drupal/_fabfile.yaml'] = 'fabfile.yaml';
+        templates[templateFolder + '_fabfile.yaml'] = 'fabfile.yaml';
         templates[templateFolder + '_gitignore'] = '.gitignore';
         templates[templateFolder + '_composer.json'] = 'composer.json';
 

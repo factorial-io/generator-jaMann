@@ -12,10 +12,6 @@
     },
     {
       "type": "git",
-      "url": "https://github.com/factorial-io/drupal-docker.git"
-    },
-    {
-      "type": "git",
       "url": "https://github.com/factorial-io/factorial-tools-installer-plugin.git"
     }
 
@@ -25,8 +21,7 @@
     "factorial-io/factorial-tools-installer-plugin": "~1.0",
     "derhasi/composer-preserve-paths": "0.1.*",
     "drupal/drupal": "8.*",
-    "factorial-io/fabalicious": "dev-master",
-    "factorial-io/drupal-docker": "dev-master"
+    "factorial-io/fabalicious": "dev-master"
   },
   "extra": {
     "installer-paths": {
