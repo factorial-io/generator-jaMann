@@ -45,7 +45,7 @@
   "prefer-stable": true,
   "scripts": {
     "post-install-cmd": [
-      "ln -s _tools/fabalicious/fabfile.py fabfile.py",
+      "if [ ! -f fabfile.py ] ; then ln -s _tools/fabalicious/fabfile.py fabfile.py ; fi",
       "mv _tools/drupal-docker _tools/docker"
     ]
   }
