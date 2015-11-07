@@ -31,19 +31,6 @@
       }
     },
     {
-      "type": "package",
-      "package": {
-        "name": "drupal/xhprof",
-        "version": "7.1-dev",
-        "type": "drupal-module",
-        "source": {
-          "url": "git://git.drupal.org/project/XHProf.git",
-          "type": "git",
-          "reference": "7.x-1.x"
-        }
-      }
-    },
-    {
       "type": "git",
       "url": "https://github.com/factorial-io/tcm.git"
     },
@@ -70,12 +57,18 @@
     {
       "type": "git",
       "url": "https://github.com/factorial-io/frontend"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/factorial-io/factorial-tools-installer-plugin.git"
     }
 
   ],
   "require": {
-    "davidbarratt/custom-installer": "dev-master",
+    "composer/installers": "~1.0",
     "derhasi/composer-preserve-paths": "0.1.*",
+    "factorial-io/factorial-tools-installer-plugin": "~1.0",
+    "drupal/drupal-library-installer-plugin": "~0.1",
     "library/backbone": "1.0.0",
     "library/underscore": "1.5.2",
     "drupal/drupal": "7.*",
@@ -109,16 +102,26 @@
     "factorial-io/drupal-docker": "dev-master"
   },
   "extra": {
-    "custom-installer": {
-      "drupal-module": "public/sites/all/modules/contrib/{$name}/",
-      "drupal-theme": "public/sites/all/themes/contrib/{$name}/",
-      "drupal-theme-engine": "public/sites/all/themes/engines/{$name}/",
-      "library": "public/sites/all/libraries/{$name}/",
-      "drupal-library": "public/sites/all/libraries/{$name}/",
-      "drupal-drush": "public/sites/all/drush/{$name}/",
-      "drupal-profile": "public/profiles/{$name}/",
-      "drupal-core": "public/",
-      "factorial-tools": "_tools/{$name}"
+    "drupal-libraries": {
+      "library-directory": "web/sites/all/libraries",
+      "libraries": [
+        {
+          "name": "backbone",
+          "package": "library/backbone"
+        },
+        {
+          "name": "underscore",
+          "package": "library/underscore"
+        }
+      ]
+    },
+    "installer-paths": {
+      "public": ["type:drupal-core"],
+      "public/sites/all/modules/contrib/{$name}": ["type:drupal-module"],
+      "public/sites/all/profiles/contrib/{$name}": ["type:drupal-profile"],
+      "public/sites/all/themes/contrib/{$name}": ["type:drupal-theme"],
+      "public/sites/all/themes/engines/{$name}": ["type:drupal-theme-engine"],
+      "public/sites/all/libraries/{$name}/": ["type:drupal-library"]
     },
     "preserve-paths": [
       "public/sites/all/modules/contrib",
@@ -130,9 +133,11 @@
       "public/sites/default/files"
     ]
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "scripts": {
     "post-install-cmd": [
-      "ln -s _tools/fabalicious/fabfile.py fabfile.py",
+      "if [ ! -f fabfile.py ] ; then ln -s _tools/fabalicious/fabfile.py fabfile.py ; fi",
       "mv _tools/drupal-docker _tools/docker"
     ]
   }
