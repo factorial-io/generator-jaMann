@@ -31,6 +31,19 @@
       }
     },
     {
+      "package": {
+        "name": "library/mthaml",
+        "source": {
+          "reference": "master",
+          "type": "git",
+          "url": "https://github.com/factorial-io/MtHaml.git"
+        },
+        "type": "drupal-library",
+        "version": "1.7-dev"
+      },
+      "type": "package"
+    },
+    {
       "type": "git",
       "url": "https://github.com/factorial-io/tcm.git"
     },
@@ -93,7 +106,7 @@
     "drupal/views": "7.*",
     "drupal/views_bulk_operations": "7.*",
     "drupal/xhprof": "7.*@dev",
-    "mthaml/mthaml": "dev-master",
+    "library/mthaml": "1.7-dev",
     "factorial-io/oxide": "dev-master",
     "factorial-io/frontend": "dev-master",
     "factorial-io/tcm": "dev-master",
@@ -112,6 +125,10 @@
         {
           "name": "underscore",
           "package": "library/underscore"
+        },
+        {
+          "name": "mthaml",
+          "package": "library/MtHaml"
         }
       ]
     },
@@ -137,8 +154,8 @@
   "prefer-stable": true,
   "scripts": {
     "post-install-cmd": [
-      "if [ ! -f fabfile.py ] ; then ln -s _tools/fabalicious/fabfile.py fabfile.py ; fi",
-      "mv _tools/drupal-docker _tools/docker"
+      "ln -sf _tools/fabalicious/fabfile.py fabfile.py",
+      "cd _tools; ln -sf drupal-docker docker"
     ]
   }
 }
