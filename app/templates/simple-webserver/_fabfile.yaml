@@ -28,9 +28,8 @@ dockerHosts:
       run:
         - run_task(stop)
         - docker rm %name%
-        - cd %rootFolder%/%projectFolder% && docker run -d  --name %name% -e VHOST=%guest.host% -v %rootFolder%/%projectFolder%/%sitesFolder%:/site -v %rootFolder%/%projectFolder%/%configFolder%:/etc/nginx/sites-enabled dockerfile/nginx
+        - cd %rootFolder%/%projectFolder% && docker run -d  --name %name% -e VHOST=%guest.host% -v %rootFolder%/%projectFolder%/%sitesFolder%:/usr/share/nginx/html -v %rootFolder%/%projectFolder%/%configFolder%:/etc/nginx/sites-enabled nginx
         - run_task(reload_haproxy)
-
 
 hosts:
   mbb:
