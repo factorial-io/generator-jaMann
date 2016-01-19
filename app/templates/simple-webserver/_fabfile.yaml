@@ -6,7 +6,9 @@ dockerHosts:
       start:
         - docker start %name%
       stop:
-        - docker stop %name%
+        - if docker ps | grep -qw %name%; then docker stop %name%; fi
+      rm:
+        - if docker ps -a | grep -qw %name% ; then docker rm %name%; fi
       logs:
         - docker logs %name%
       ps:
