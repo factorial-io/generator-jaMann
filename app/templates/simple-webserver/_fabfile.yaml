@@ -6,7 +6,9 @@ dockerHosts:
       start:
         - docker start %name%
       stop:
-        - docker stop %name%
+        - if docker ps | grep -qw %name%; then docker stop %name%; fi
+      rm:
+        - if docker ps -a | grep -qw %name% ; then docker rm %name%; fi
       logs:
         - docker logs %name%
       ps:
@@ -28,9 +30,8 @@ dockerHosts:
       run:
         - run_task(stop)
         - docker rm %name%
-        - cd %rootFolder%/%projectFolder% && docker run -d  --name %name% -e VHOST=%guest.host% -v %rootFolder%/%projectFolder%/%sitesFolder%:/site -v %rootFolder%/%projectFolder%/%configFolder%:/etc/nginx/sites-enabled dockerfile/nginx
+        - cd %rootFolder%/%projectFolder% && docker run -d  --name %name% -e VHOST=%guest.host% -v %rootFolder%/%projectFolder%/%sitesFolder%:/usr/share/nginx/html -v %rootFolder%/%projectFolder%/%configFolder%:/etc/nginx/sites-enabled nginx
         - run_task(reload_haproxy)
-
 
 hosts:
   mbb:
