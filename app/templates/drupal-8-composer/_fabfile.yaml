@@ -76,17 +76,12 @@ hosts:
     user: root
     password: root
     port: <%= port %>
-    # path to drupal's root folder
     rootFolder: /var/www/public
     gitRootFolder: /var/www/
-    # path to the site's folder
     siteFolder: /sites/default
     filesFolder: /sites/default/files
     backupFolder: /var/www/backups
-    useForDevelopment: true
-    # branch to pull
     branch: develop
-    hasDrush: true
     supportsInstalls: true
     docker:
       name: <%= name %>
