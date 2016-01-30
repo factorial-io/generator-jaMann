@@ -76,6 +76,7 @@ hosts:
     user: root
     password: root
     port: <%= port %>
+    type: dev
     rootFolder: /var/www/public
     gitRootFolder: /var/www/
     siteFolder: /sites/default
