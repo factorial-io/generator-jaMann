@@ -13,7 +13,6 @@ web:
 mysql:
   image: mysql
   volumes:
-    - "$MYSQL_ROOT/conf/:/etc/mysql/conf.d"
     - "/opt/mysql/$VHOST:/var/lib/mysql"
 
   environment:

@@ -38,7 +38,6 @@ dockerHosts:
       WEB_ROOT: "%host.rootFolder%"
       VHOST: "%host.host%"
       ROOT_FOLDER: "%dockerHost.rootFolder%/%host.docker.projectFolder%"
-      MYSQL_ROOT: "%dockerHost.rootFolder%/%host.docker.projectFolder%/mysql"
 
     tasks:
       stop:
@@ -48,12 +47,10 @@ dockerHosts:
         - cd $ROOT_FOLDER; docker-compose rm -f
 
       rebuild:
-        - mkdir -p $MYSQL_ROOT
         - execute(docker, rm)
         - cd $ROOT_FOLDER; docker-compose pull
 
       run:
-        - mkdir -p $MYSQL_ROOT
         - cd $ROOT_FOLDER; docker-compose up -d
         - execute(docker, reload_haproxy)
         - execute(docker, waitForServices)
