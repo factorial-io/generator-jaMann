@@ -1,6 +1,17 @@
 name: <%= name %>
 deploymentModule: <%= name %>_deploy
 
+requires: 2.0.0
+
+needs:
+  - ssh
+  - composer
+  - docker
+  - drush8
+  - drupalconsole
+  - git
+  - files
+
 excludeFiles:
   backup:
     - "styles"
@@ -20,6 +31,43 @@ dockerHosts:
         - docker logs %name%
       ps:
         - docker ps
+  dockerCompose:
+
+    environment:
+      SSH_PORT: "%host.port%"
+      WEB_ROOT: "%host.rootFolder%"
+      VHOST: "%host.host%"
+      ROOT_FOLDER: "%dockerHost.rootFolder%/%host.docker.projectFolder%"
+      MYSQL_ROOT: "%dockerHost.rootFolder%/%host.docker.projectFolder%/mysql"
+
+    tasks:
+      stop:
+        - cd $ROOT_FOLDER; docker-compose stop
+      rm:
+        - execute(docker, stop)
+        - cd $ROOT_FOLDER; docker-compose rm -f
+
+      rebuild:
+        - mkdir -p $MYSQL_ROOT
+        - execute(docker, rm)
+        - cd $ROOT_FOLDER; docker-compose pull
+
+      run:
+        - mkdir -p $MYSQL_ROOT
+        - cd $ROOT_FOLDER; docker-compose up -d
+        - execute(docker, reload_haproxy)
+        - execute(docker, waitForServices)
+
+      create:
+        - git clone %host.docker.repository% %host.docker.projectFolder%
+        - cd %host.docker.projectFolder% && composer install
+        - cd %host.docker.projectFolder% && git checkout %host.branch% && git submodule update --init
+        - execute(docker, rebuild)
+
+  mbb:
+    inheritsFrom:
+      - ../../fabalicious/2.0/mbb-docker.yaml
+      - dockerCompose
 
 
 hosts:
@@ -28,8 +76,6 @@ hosts:
     user: root
     password: root
     port: <%= port %>
-    vagrant:
-      ip: 33.33.33.13
     # path to drupal's root folder
     rootFolder: /var/www/public
     gitRootFolder: /var/www/
@@ -45,7 +91,7 @@ hosts:
     docker:
       name: <%= name %>
       hostName: <% name %>.dev
-      configuration: ../../fabalicious/mbb-docker-php56-no-mysql.yaml
+      configuration: mbb
       projectFolder: <%= name %>
     database:
       name: <%= name %>

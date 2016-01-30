@@ -442,6 +442,10 @@ module.exports = generators.Base.extend({
         templates[templateFolder + '_gitignore'] = '.gitignore';
         templates[templateFolder + '_composer.json'] = 'composer.json';
 
+        if (version == 8) {
+          templates[templateFolder + '_docker-compose.yml'] = 'docker-compose.yml';
+          templates[templateFolder + '_autoload.php'] = 'autoload.php';
+        }
         this._installCommon(paths, commands, templates, values, function() {
           var templateFiles = {};
           var targetFolder = 'public/sites/all/modules/custom/' + values.name + '_deploy/';
