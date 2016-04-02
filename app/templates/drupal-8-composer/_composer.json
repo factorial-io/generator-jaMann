@@ -24,7 +24,7 @@
     "wikimedia/composer-merge-plugin": "^1.3.0",
     "factorial-io/factorial-tools-installer-plugin": "~1.0",
     "drupal/core": "8.*",
-    "drupal-composer/drupal-scaffold": "dev-master",
+    "drupal-composer/drupal-scaffold": "~1",
     "factorial-io/fabalicious": "dev-develop"
 
   },
@@ -56,12 +56,22 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "autoload": {
+        "classmap": [
+            "scripts/composer/ScriptHandler.php"
+        ]
+    },
   "scripts": {
+    "drupal-scaffold": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold",
     "post-install-cmd": [
+      "DrupalProject\\composer\\ScriptHandler::buildScaffold",
+      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
       "if [ ! -f fabfile.py ] ; then ln -s _tools/fabalicious/fabfile.py fabfile.py ; fi",
-      "cp autoload.php public/autoload.php",
-      "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
+      "cp autoload.php public/autoload.php"
     ],
-    "drupal-scaffold": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
+    "post-update-cmd": [
+        "DrupalProject\\composer\\ScriptHandler::buildScaffold",
+        "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+    ]
   }
 }

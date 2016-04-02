@@ -1,5 +1,7 @@
 web:
   image: factorial/drupal-docker:php-56
+  ports:
+    - "$SSH_PORT:22"
   volumes:
     - .:/var/www
   links:

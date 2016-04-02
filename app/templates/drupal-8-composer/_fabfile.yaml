@@ -20,6 +20,14 @@ excludeFiles:
     - "tmp"
     - "styles"
 
+scripts:
+  behat:
+    # behat is a dev-dependency and installed via composer install of the
+    # project. No extra install-step necessary.
+    - fail_on_error(0)
+    - cd %host.gitRootFolder%/_tools/behat && ../../vendor/bin/behat %arguments.combined%
+    - fail_on_error(1)
+
 dockerHosts:
   default:
     tasks:
@@ -31,40 +39,20 @@ dockerHosts:
         - docker logs %name%
       ps:
         - docker ps
-  dockerCompose:
-
-    environment:
-      SSH_PORT: "%host.port%"
-      WEB_ROOT: "%host.rootFolder%"
-      VHOST: "%host.host%"
-      ROOT_FOLDER: "%dockerHost.rootFolder%/%host.docker.projectFolder%"
-
-    tasks:
-      stop:
-        - cd $ROOT_FOLDER; docker-compose stop
-      rm:
-        - execute(docker, stop)
-        - cd $ROOT_FOLDER; docker-compose rm -f
-
-      rebuild:
-        - execute(docker, rm)
-        - cd $ROOT_FOLDER; docker-compose pull
-
-      run:
-        - cd $ROOT_FOLDER; docker-compose up -d
-        - execute(docker, reload_haproxy)
-        - execute(docker, waitForServices)
-
-      create:
-        - git clone %host.docker.repository% %host.docker.projectFolder%
-        - cd %host.docker.projectFolder% && composer install
-        - cd %host.docker.projectFolder% && git checkout %host.branch% && git submodule update --init
-        - execute(docker, rebuild)
-
   mbb:
+    environment:
+      COMPOSE_FILE: docker-compose-mbb.yml
     inheritsFrom:
       - ../../fabalicious/2.0/mbb-docker.yaml
-      - dockerCompose
+      - http://config.factorial.io/docker/2.0/docker-compose.yaml
+
+  clients.factorial.io:
+    environment:
+      VHOST: "%host.docker.vhost%"
+    inheritsFrom:
+      - http://config.factorial.io/clients.factorial.io/2.0/docker.yaml
+      - http://config.factorial.io/docker/2.0/docker-compose.yaml
+
 
 
 hosts:
@@ -83,7 +71,6 @@ hosts:
     supportsInstalls: true
     docker:
       name: <%= name %>
-      hostName: <% name %>.dev
       configuration: mbb
       projectFolder: <%= name %>
     database:

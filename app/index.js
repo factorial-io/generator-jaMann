@@ -444,6 +444,7 @@ module.exports = generators.Base.extend({
 
         if (version == 8) {
           templates[templateFolder + '_docker-compose.yml'] = 'docker-compose.yml';
+          templates[templateFolder + '_docker-compose-mbb.yml'] = 'docker-compose-mbb.yml';
           templates[templateFolder + '_autoload.php'] = 'autoload.php';
         }
         this._installCommon(paths, commands, templates, values, function() {
