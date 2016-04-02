@@ -1,10 +1,10 @@
 {
-  "name": "generator-jamann",
-  "version": "0.3.1",
+  "name": "generator-jamensch",
+  "version": "0.1.0",
   "description": "Yeoman generator",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "factorial-io/generator-jaMann",
+  "repository": "factorial-io/generator-jaMensch",
   "author": {
     "name": "Volkan Florchinger",
     "email": "volkan@factorial.io",
@@ -29,12 +29,14 @@
     "fs": "0.0.2",
     "fs-extra": "^0.16.3",
     "fs-extra-promise": "^0.1.0",
+    "jsonfile": "^2.2.3",
+    "request": "^2.53.0",
     "shelljs": "^0.3.0",
     "underscore": "^1.8.1",
     "update-notifier": "^0.3.0",
     "yeoman-generator": "^0.18.0",
-    "yosay": "^0.3.0",
-    "request": "^2.53.0"
+    "yeoman-option-or-prompt": "^1.0.2",
+    "yosay": "^0.3.0"
   },
   "devDependencies": {
     "mocha": "*"
