@@ -232,7 +232,8 @@ module.exports = generators.Base.extend({
           'fabfile.pyc',
           'fabfile.yaml.lock',
           '_tools/fabalicious',
-          webRoot + '/sites/default'
+          webRoot + '/sites/default/settings.php',
+          webRoot + '/sites/default/services.yml'
         ], cb);
       }.bind(this),
 
