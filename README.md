@@ -1,48 +1,37 @@
-# generator-jaMann [![Build Status](https://api.travis-ci.org/MuschPusch/generator-jaMann.png?branch=master)](https://travis-ci.org/MuschPusch/generator-jaMann)
+# generator-jamensch
 
+## what it does
 
-> [Yeoman](http://yeoman.io) generator
+This generator scaffolds a new drupal 8 project using [drupal-composer/drupal-project](https://github.com/drupal-composer/drupal-project) for
+creating the actual project. 
 
+The generator adds a barebone deploy-module, requires [fabalicious](https://github.com/factorial-io/fabalicious) and uses
+[multibasebox](https://github.com/factorial-io/multibasebox) to spin up the dev-boxes via docker-compose. It
+assumes a multibasebox-setup.
 
-## Getting Started
+## how to install
 
-### What is Yeoman?
+1. Clone this repository and checkout the develop-branch.
+2. cd into the folder
+3. run `npm link`
 
-Trick question. It's not a thing. It's this guy:
+This is necessary as the project is not published to the npm-registry yet.
 
-![](http://i.imgur.com/JHaAlBJ.png)
+## how to run
 
-Basically, he wears a top hat, lives in your computer, and waits for you to tell him what kind of application you wish to create.
+1. cd into your multibasebox-folder
+2. run `yo jamensch`
+3. provide a project-name.
+4. wait.
 
-Not every new computer comes with a Yeoman pre-installed. He lives in the [npm](https://npmjs.org) package repository. You only have to ask for him once, then he packs up and moves into your hard drive. *Make sure you clean up, he likes new and shiny things.*
+## what you should do next
 
-```bash
-npm install -g yo
-```
-
-### Yeoman Generators
-
-Yeoman travels light. He didn't pack any generators when he moved in. You can think of a generator like a plug-in. You get to choose what type of application you wish to create, such as a Backbone application or even a Chrome extension.
-
-To install generator-jaMann from npm, run:
-
-```bash
-npm install -g generator-jamann
-```
-
-Finally, initiate the generator:
-
-```bash
-yo jamann
-```
-
-### Getting To Know Yeoman
-
-Yeoman has a heart of gold. He's a person with feelings and opinions, but he's very easy to work with. If you think he's too opinionated, he can be easily convinced.
-
-If you'd like to get to know Yeoman better and meet some of his friends, [Grunt](http://gruntjs.com) and [Bower](http://bower.io), check out the complete [Getting Started Guide](https://github.com/yeoman/yeoman/wiki/Getting-Started).
-
+1. cd into the new project
+2. run `git init`
+3. run `fab config:mbb docker:run`
+4. run `fab config:mbb install`
 
 ## License
 
-MIT
+Stephan Maximilian Huber wrote this generator. As long as you retain this notice you can do whatever you want with this stuff. If we meet some day, and you think this stuff is worth it, you can buy me a beer in return.
+
