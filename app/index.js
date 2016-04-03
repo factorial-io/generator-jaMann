@@ -8,21 +8,17 @@ var fs = require('fs');
 var shell = require('shelljs');
 var async = require('async');
 var cowsay = require('cowsay');
-var request = require('request');
 var optionOrPrompt = require('yeoman-option-or-prompt');
 var jsonfile = require('jsonfile');
 
+var webRoot = 'web';
+
 module.exports = generators.Base.extend({
-
-  _optionOrPrompt: optionOrPrompt,
-
 
   constructor: function () {
     generators.Base.apply(this, arguments);
 
-    this.options = {
-      fabalicious: true,
-    };
+    this.argument('name', { type: String, required: false });
   },
 
   initializing: function () {
@@ -83,7 +79,6 @@ module.exports = generators.Base.extend({
           }
         }
         catch(e) {
-
         }
       }
     });
@@ -151,10 +146,13 @@ module.exports = generators.Base.extend({
       'Welcome to the ' + chalk.red('JaMensch') + ' generator!'
     ));
 
-    this._optionOrPrompt([{
+    this.prompt([{
       type: 'input',
       name: 'name',
       message: 'Name of your project',
+      when: function() {
+        return this.name === undefined;
+      }.bind(this),
       validate: function(input) {
         if (input.match(/^[a-zA-Z0-9_]+$/) && input.length > 3 && input.length < 31) {
           return true;
@@ -165,6 +163,9 @@ module.exports = generators.Base.extend({
       },
     }], function (answer) {
       that.answer = answer;
+      if (that.name) {
+        that.answer.name = that.name;
+      }
       cb();
     });
   },
@@ -176,12 +177,22 @@ module.exports = generators.Base.extend({
     });
   },
 
+  _composerRequire: function(path, packages, cb) {
+    this._runCommand(path, 'composer require ' + packages.join(' '), cb);
+  },
+
+  _addToGitIgnore: function(path, lines, cb) {
+    var gitignoreFile = path + '/.gitignore';
+    fs.appendFile(gitignoreFile, "\n" + lines.join("\n"), cb);
+  },
+
+
   install: function () {
     this._checkRequirements(['composer', 'pip', 'fab']);
     var paths = this._getPaths(this.answer.name);
     var values = this.answer;
 
-    this.log('Installing Drupal 8 via composer');
+    this.log('Installing Drupal 8 via composer in ' + paths.project);
 
     if(fs.existsSync(paths.project)) {
       this.log(chalk.red('Project directory exists already!'));
@@ -189,14 +200,21 @@ module.exports = generators.Base.extend({
     }
     // Call theses functions in series.
     async.series([
+      // Install drupal
       function(cb) {
         this._runCommand(paths.projects, 'composer create-project drupal-composer/drupal-project:8.x-dev ' + values.name + " --stability dev --no-interaction", cb);
       }.bind(this),
 
+      // Install some more packages.
       function(cb) {
-        this._runCommand(paths.project, 'composer require factorial-io/fabalicious:dev-develop', cb);
+        this._composerRequire(paths.project, [
+          'factorial-io/fabalicious:dev-develop',
+          'drupal/devel:8.*',
+          'drupal/coffee:8.*',
+        ], cb);
       }.bind(this),
 
+      // Update install-script in composer.json.
       function(cb) {
         var composerFile = paths.project + '/composer.json';
         jsonfile.readFile(composerFile, function(err, obj) {
@@ -207,6 +225,23 @@ module.exports = generators.Base.extend({
         });
       }.bind(this),
 
+      // Add some more files to the .gitignore.
+      function(cb) {
+        this._addToGitIgnore(paths.project, [
+          'fabfile.py',
+          'fabfile.pyc',
+          'fabfile.yaml.lock',
+          '_tools/fabalicious',
+          webRoot + '/sites/default'
+        ], cb);
+      }.bind(this),
+
+      // Run composer install again.
+      function(cb) {
+        this._runCommand(paths.project, 'composer install", cb);
+      }.bind(this),
+
+      // Get an available port.
       function(cb) {
         this._getAvailablePort(function(port) {
           values.port = port + 1;
@@ -214,6 +249,7 @@ module.exports = generators.Base.extend({
         });
       }.bind(this),
 
+      // Write template files.
       function(cb) {
         var moduleName = values.name + '_deploy';
 
@@ -221,10 +257,10 @@ module.exports = generators.Base.extend({
           '_fabfile.yaml': 'fabfile.yaml',
           '_docker-compose.yml': 'docker-compose.yml',
           '_docker-compose-mbb.yml': 'docker-compose-mbb.yml',
-          'deploy-module/_composer.json': 'web/modules/custom/' + moduleName + '/composer.json',
-          'deploy-module/_deploy.info.yml': 'web/modules/custom/' + moduleName + '/' + moduleName +'.info.yml',
-          'deploy-module/_deploy.install': 'web/modules/custom/' + moduleName + '/' + moduleName +'.install',
-          'deploy-module/_deploy.module': 'web/modules/custom/' + moduleName + '/' + moduleName +'.module',
+          'deploy-module/_composer.json':   webRoot + '/modules/custom/' + moduleName + '/composer.json',
+          'deploy-module/_deploy.info.yml': webRoot + '/modules/custom/' + moduleName + '/' + moduleName +'.info.yml',
+          'deploy-module/_deploy.install':  webRoot + '/modules/custom/' + moduleName + '/' + moduleName +'.install',
+          'deploy-module/_deploy.module':   webRoot + '/modules/custom/' + moduleName + '/' + moduleName +'.module',
         }
         this._installTemplateFiles(paths, templateFiles, values);
         cb();
