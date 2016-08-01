@@ -239,7 +239,7 @@ module.exports = generators.Base.extend({
 
       // Run composer install again.
       function(cb) {
-        this._runCommand(paths.project, 'composer install", cb);
+        this._runCommand(paths.project, 'composer install', cb);
       }.bind(this),
 
       // Get an available port.
