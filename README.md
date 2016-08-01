@@ -1,3 +1,7 @@
+# Deprecated in D8 for JaMensch which is not available on github for now.
+
+
+
 # generator-jaMann [![Build Status](https://api.travis-ci.org/MuschPusch/generator-jaMann.png?branch=master)](https://travis-ci.org/MuschPusch/generator-jaMann)
 
 
