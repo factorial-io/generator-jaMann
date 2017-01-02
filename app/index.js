@@ -7,8 +7,6 @@ var _ = require('underscore');
 var fs = require('fs');
 var shell = require('shelljs');
 var async = require('async');
-var cowsay = require('cowsay');
-var optionOrPrompt = require('yeoman-option-or-prompt');
 var jsonfile = require('jsonfile');
 
 var webRoot = 'web';
