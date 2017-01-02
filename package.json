@@ -1,15 +1,22 @@
 {
   "name": "generator-jamann",
-  "version": "0.3.1",
-  "description": "Yeoman generator",
+  "version": "1.0.0",
+  "description": "Scaffolds new drupal 8 projects for a multibasebox environment and fabalicious",
   "license": "MIT",
   "main": "app/index.js",
   "repository": "factorial-io/generator-jaMann",
-  "author": {
-    "name": "Volkan Florchinger",
-    "email": "volkan@factorial.io",
-    "url": "https://github.com/MuschPusch"
-  },
+  "contributors": [
+    {
+      "name": "Stephan Maximilian Huber",
+      "email": "stephan@factorial.io",
+      "url": "https://github.com/stmh"
+    },
+    {
+      "name": "Volkan Flörchinger",
+      "email": "volkan@factorial.io",
+      "url": "https://github.com/muschpusch"
+    }
+  ],
   "engines": {
     "node": ">=0.10.0"
   },
@@ -23,18 +30,17 @@
     "yeoman-generator"
   ],
   "dependencies": {
-    "async": "^0.9.0",
-    "chalk": "^0.5.0",
+    "async": "^2.0.0-rc.2",
+    "chalk": "^1.1.3",
     "cowsay": "^1.0.3",
     "fs": "0.0.2",
-    "fs-extra": "^0.16.3",
-    "fs-extra-promise": "^0.1.0",
-    "shelljs": "^0.3.0",
+    "jsonfile": "^2.2.3",
+    "shelljs": "^0.6.0",
     "underscore": "^1.8.1",
-    "update-notifier": "^0.3.0",
-    "yeoman-generator": "^0.18.0",
-    "yosay": "^0.3.0",
-    "request": "^2.53.0"
+    "update-notifier": "^0.6.3",
+    "yeoman-generator": "^0.22.5",
+    "yeoman-option-or-prompt": "^1.0.2",
+    "yosay": "^1.1.0"
   },
   "devDependencies": {
     "mocha": "*"
