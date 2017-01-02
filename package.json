@@ -1,15 +1,22 @@
 {
-  "name": "generator-jamensch",
-  "version": "0.1.0",
-  "description": "Yeoman generator",
+  "name": "generator-jamann",
+  "version": "1.0.0",
+  "description": "Scaffolds new drupal 8 projects for a multibasebox environment and fabalicious",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "factorial-io/generator-jaMensch",
-  "author": {
-    "name": "Volkan Florchinger",
-    "email": "volkan@factorial.io",
-    "url": "https://github.com/MuschPusch"
-  },
+  "repository": "factorial-io/generator-jaMann",
+  "contributors": [
+    {
+      "name": "Stephan Maximilian Huber",
+      "email": "stephan@factorial.io",
+      "url": "https://github.com/stmh"
+    },
+    {
+      "name": "Volkan Flörchinger",
+      "email": "volkan@factorial.io",
+      "url": "https://github.com/muschpusch"
+    }
+  ],
   "engines": {
     "node": ">=0.10.0"
   },
