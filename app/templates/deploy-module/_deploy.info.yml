@@ -3,4 +3,5 @@ description: "Helper module to centralize all deploy-related actions via hook_up
 package: <%= name %>
 type: module
 core: 8.x
-
+dependencies:
+  - factorial_tools

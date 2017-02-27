@@ -1,47 +1,9 @@
 <?php
 
-
 /**
- * Helper function to revert overriden views.
+ * @file
+ * Custom install hooks.
  */
-function _<%= name %>_deploy_revert_overridden_views() {
-  $views = views_get_all_views();
-  $overridden = array();
-
-  // Find all overridden views.
-  foreach ($views as $view) {
-    if ($view->disabled) {
-      continue;
-    }
-    if ($view->type == t('Overridden')) {
-      $overridden[$view->name] = $view->name;
-    }
-  }
-
-  if (!empty($overridden)) {
-
-    // Call drush-implementation, but only if we
-    // have overridden views, otherwise we'll get an error which may break CI:
-
-    views_revert_views();
-  }
-}
-
-
-function _<%= name %>_deploy_set_translation($source, $translation, $langcode, $textgroup = 'default', $context='', $location = '') {
-  $report = array(
-    'skips'=>0,
-    'updates'=>0,
-    'deletes'=>0,
-    'additions'=>0
-  ); // ??
-  $mode = LOCALE_IMPORT_OVERWRITE; // LOCALE_IMPORT_KEEP
-
-  _locale_import_one_string_db($report, $langcode, $context, $source, $translation, $textgroup, $location, $mode);
-
-  // Clear locale cache.
-  cache_clear_all('locale:', 'cache', TRUE);
-}
 
 /**
  * Implements hook_install().
@@ -54,4 +16,3 @@ function <%= name %>_deploy_install() {
     }
   }
 }
-

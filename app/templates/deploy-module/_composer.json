@@ -3,5 +3,7 @@
   "description": "Deployment module",
   "type": "drupal-module",
   "require": {
-  }
+    "factorial-io/factorial_tools": "dev-8.x-1.x"
+    }
+  ]
 }

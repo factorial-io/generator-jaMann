@@ -207,6 +207,7 @@ module.exports = generators.Base.extend({
       function(cb) {
         this._composerRequire(paths.project, [
           'factorial-io/fabalicious:dev-develop',
+          'factorial-io/factorial_tools:dev-8.x-1.x',
           'drupal/devel:1.*',
           'drupal/coffee:1.*',
         ], cb);
