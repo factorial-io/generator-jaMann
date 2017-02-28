@@ -17,6 +17,7 @@ module.exports = generators.Base.extend({
     generators.Base.apply(this, arguments);
 
     this.argument('name', { type: String, required: false });
+    this.argument('key', { type: String, required: false });
   },
 
   initializing: function () {
@@ -141,7 +142,7 @@ module.exports = generators.Base.extend({
 
     // Say yo!
     this.log(yosay(
-      'Welcome to the ' + chalk.red('JaMensch') + ' generator!'
+      'Welcome to the ' + chalk.red('jamann') + ' generator!'
     ));
 
     this.prompt([{
@@ -159,10 +160,29 @@ module.exports = generators.Base.extend({
           return 'Project name can only contain letters, numbers and underscores and cannot be fewer than 4 or more than 30 characters';
         }
       },
+    },
+    {
+      type: 'input',
+      name: 'key',
+      message: 'key of your project',
+      when: function() {
+        return this.key === undefined;
+      }.bind(this),
+      validate: function(input) {
+        if (input.match(/^[a-z0-9]+$/) && input.length > 2 && input.length < 5) {
+          return true;
+        }
+        else {
+          return 'Project key can only contain letters and numbers and cannot be fewer than 2 or more than 4 characters';
+        }
+      }
     }], function (answer) {
       that.answer = answer;
       if (that.name) {
         that.answer.name = that.name;
+      }
+      if (that.key) {
+        that.answer.key = that.key;
       }
       cb();
     });
@@ -224,13 +244,13 @@ module.exports = generators.Base.extend({
         });
       }.bind(this),
 
-      // Add some more files to the .gitignore.
-      function(cb) {
-        this._addToGitIgnore(paths.project, [
-          'fabfile.py',
-          'fabfile.pyc',
-          'fabfile.yaml.lock',
-          '_tools/fabalicious',
+    // Add some more files to the .gitignore.
+    function(cb) {
+      this._addToGitIgnore(paths.project, [
+        'fabfile.py',
+        'fabfile.pyc',
+        'fabfile.yaml.lock',
+        '_tools/fabalicious',
           webRoot + '/sites/default/settings.php',
           webRoot + '/sites/default/services.yml'
         ], cb);
@@ -251,7 +271,7 @@ module.exports = generators.Base.extend({
 
       // Write template files.
       function(cb) {
-        var moduleName = values.name + '_deploy';
+        var moduleName = values.key + '_deploy';
 
         var templateFiles = {
           '_fabfile.yaml': 'fabfile.yaml',

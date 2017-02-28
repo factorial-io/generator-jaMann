@@ -8,8 +8,8 @@
 /**
  * Implements hook_install().
  */
-function <%= name %>_deploy_install() {
-  for ($i = 7001; $i < 8000; $i++) {
+function <%= key %>_deploy_install() {
+  for ($i = 8001; $i < 9000; $i++) {
     $candidate = '<%= name %>_deploy_update_' . $i;
     if (function_exists($candidate)) {
       $candidate();
