@@ -21,6 +21,10 @@ excludeFiles:
     - "tmp"
     - "styles"
 
+installOptions:
+  distribution: <%= distribution.name %>
+  options: "<%= distribution.options %>"
+
 scripts:
   behat:
     # behat is a dev-dependency and installed via composer install of the
@@ -30,23 +34,23 @@ scripts:
     - fail_on_error(1)
 
   xdebug:
-    - export DEBIAN_FRONTEND=noninteractive && apt-get -y -q install php5-xdebug
-    - echo xdebug.remote_autostart=1 >> /etc/php5/apache2/php.ini
-    - echo xdebug.remote_enable=1 >> /etc/php5/apache2/php.ini
-    - echo xdebug.remote_host=33.33.33.1 >> /etc/php5/apache2/php.ini
-    - echo xdebug.idekey=PHP-XDEBUG >> /etc/php5/apache2/php.ini
-    - echo xdebug.remote_mode=req >> /etc/php5/apache2/php.ini
-    - echo xdebug.remote_port=9000 >> /etc/php5/apache2/php.ini
-    - echo xdebug.max_nesting_level=1000 >> /etc/php5/apache2/php.ini
-    - echo zend_extension xdebug.so >> /etc/php5/apache2/php.ini
-    - echo xdebug.remote_autostart=1 >> /etc/php5/cli/php.ini
-    - echo xdebug.remote_enable=1 >> /etc/php5/cli/php.ini
-    - echo xdebug.remote_host=33.33.33.1 >> /etc/php5/cli/php.ini
-    - echo xdebug.idekey=PHP-XDEBUG >> /etc/php5/cli/php.ini
-    - echo xdebug.remote_mode=req >> /etc/php5/cli/php.ini
-    - echo xdebug.remote_port=9000 >> /etc/php5/cli/php.ini
-    - echo xdebug.max_nesting_level=1000 >> /etc/php5/cli/php.ini
-    - echo zend_extension xdebug.so >> /etc/php5/apache2/php.ini
+    - export DEBIAN_FRONTEND=noninteractive && apt-get -y -q install php7.0-xdebug
+    - echo xdebug.remote_autostart=1 >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.remote_enable=1 >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.remote_host=33.33.33.1 >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.idekey=PHP-XDEBUG >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.remote_mode=req >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.remote_port=9000 >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.max_nesting_level=1000 >> /etc/php7.0/apache2/php.ini
+    - echo zend_extension xdebug.so >> /etc/php7.0/apache2/php.ini
+    - echo xdebug.remote_autostart=1 >> /etc/php7.0/cli/php.ini
+    - echo xdebug.remote_enable=1 >> /etc/php7.0/cli/php.ini
+    - echo xdebug.remote_host=33.33.33.1 >> /etc/php7.0/cli/php.ini
+    - echo xdebug.idekey=PHP-XDEBUG >> /etc/php7.0/cli/php.ini
+    - echo xdebug.remote_mode=req >> /etc/php7.0/cli/php.ini
+    - echo xdebug.remote_port=9000 >> /etc/php7.0/cli/php.ini
+    - echo xdebug.max_nesting_level=1000 >> /etc/php7.0/cli/php.ini
+    - echo zend_extension xdebug.so >> /etc/php7.0/apache2/php.ini
     - service apache2 graceful
 
 dockerHosts:
@@ -82,7 +86,7 @@ hosts:
     password: root
     port: <%= port %>
     type: dev
-    rootFolder: /var/www/web
+    rootFolder: /var/www/<%= distribution.docRoot %>
     gitRootFolder: /var/www/
     siteFolder: /sites/default
     filesFolder: /sites/default/files
