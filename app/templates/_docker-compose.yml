@@ -1,5 +1,5 @@
 web:
-  image: factorial/drupal-docker:php-70
+  image: factorial/drupal-docker:php-71
   volumes:
     - .:/var/www
   links:
