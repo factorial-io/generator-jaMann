@@ -176,7 +176,35 @@ module.exports = generators.Base.extend({
           return 'Project key can only contain letters and numbers and cannot be fewer than 2 or more than 4 characters';
         }
       }
-    }], function (answer) {
+    },
+    {
+      type: 'list',
+      name: 'distribution',
+      message: 'which distribution to use',
+      choices: [
+        {
+          name: 'Drupal core',
+          value: {
+            name: 'minimal',
+            options: '',
+            composer: 'drupal-composer/drupal-project:8.x-dev',
+            docRoot: 'web'
+          },
+          checked: true
+        },
+        {
+          name: 'Thunder',
+          value: {
+            name: 'thunder',
+            options: 'thunder_module_configure_form.install_modules_thunder_demo=NULL',
+            composer: 'burdamagazinorg/thunder-project',
+            docRoot: 'docroot'
+          }
+        }
+      ]
+    },
+
+    ], function (answer) {
       that.answer = answer;
       if (that.name) {
         that.answer.name = that.name;
@@ -184,6 +212,7 @@ module.exports = generators.Base.extend({
       if (that.key) {
         that.answer.key = that.key;
       }
+
       cb();
     });
   },
@@ -220,29 +249,18 @@ module.exports = generators.Base.extend({
     async.series([
       // Install drupal
       function(cb) {
-        this._runCommand(paths.projects, 'composer create-project drupal-composer/drupal-project:8.x-dev ' + values.name + " --stability dev --no-interaction", cb);
+        this._runCommand(paths.projects, 'composer create-project ' + values.distribution.composer + ' ' + values.name + " --stability dev --no-interaction", cb);
       }.bind(this),
 
       // Install some more packages.
       function(cb) {
         this._composerRequire(paths.project, [
           'factorial-io/fabalicious:dev-develop',
-          'factorial-io/factorial_tools:dev-8.x-1.x',
           'drupal/devel:1.*',
           'drupal/coffee:1.*',
         ], cb);
       }.bind(this),
 
-      // Update install-script in composer.json.
-      function(cb) {
-        var composerFile = paths.project + '/composer.json';
-        jsonfile.readFile(composerFile, function(err, obj) {
-          obj.scripts['post-install-cmd'].push('ln -sf _tools/fabalicious/fabfile.py fabfile.py');
-          jsonfile.writeFile(composerFile, obj, {spaces: 2}, function(err) {
-            cb(err);
-          });
-        });
-      }.bind(this),
 
     // Add some more files to the .gitignore.
     function(cb) {
