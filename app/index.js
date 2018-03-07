@@ -258,6 +258,7 @@ module.exports = generators.Base.extend({
           'factorial-io/fabalicious:dev-develop',
           'drupal/devel:1.*',
           'drupal/coffee:1.*',
+          'factorial-io/factorial_tools',
         ], cb);
       }.bind(this),
 
