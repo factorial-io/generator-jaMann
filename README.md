@@ -11,6 +11,8 @@ assumes a multibasebox-setup.
 
 ## how to install
 
+Make sure you have installes yeaoman (yo), if not, run `npm install -g yo`
+
 1. Clone this repository and checkout the develop-branch.
 2. cd into the folder
 3. run `npm link`
