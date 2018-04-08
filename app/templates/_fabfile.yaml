@@ -23,6 +23,9 @@ excludeFiles:
   copyFrom:
     - "tmp"
     - "styles"
+    - "css"
+    - "js"
+    - "php"
 
 installOptions:
   distribution: <%= distribution.name %>
