@@ -268,8 +268,6 @@ module.exports = generators.Base.extend({
       this._addToGitIgnore(paths.project, [
         'fabfile.py',
         'fabfile.pyc',
-        'fabfile.yaml.lock',
-        '_tools/fabalicious',
           webRoot + '/sites/default/settings.php',
           webRoot + '/sites/default/services.yml'
         ], cb);
