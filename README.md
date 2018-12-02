@@ -2,7 +2,7 @@
 
 ## **This tool is deprecated**
 
-This tool is deprecated, if you want to scaffold a drupal project, try [phabalicious](https://github.com/factorial-io/phabalicious)
+This tool is deprecated and unsupported, if you want to scaffold a drupal project, try [phabalicious](https://github.com/factorial-io/phabalicious)
 
 ## what it did
 
