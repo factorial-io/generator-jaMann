@@ -1,6 +1,10 @@
 # generator-jamann
 
-## what it does
+## **This tool is deprecated**
+
+This tool is deprecated, if you want to scaffold a drupal project, try [phabalicious](https://github.com/factorial-io/phabalicious)
+
+## what it did
 
 This generator scaffolds a new drupal 8 project using [drupal-composer/drupal-project](https://github.com/drupal-composer/drupal-project) for
 creating the actual project.
